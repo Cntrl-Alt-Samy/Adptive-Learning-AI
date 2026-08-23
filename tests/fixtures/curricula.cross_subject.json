@@ -1,0 +1,8 @@
+{
+  "subject": { "id": "cross_subject_fixture", "title": "Cross Subject Fixture", "category": "test" },
+  "curriculumVersion": "2026.1",
+  "concepts": [
+    { "id": "maths_node", "title": "Maths concept", "difficultyLevel": 1, "specRef": "T.1", "prerequisiteIds": [], "subjectId": "gcse_maths_edexcel" },
+    { "id": "physics_node", "title": "Physics concept", "difficultyLevel": 2, "specRef": "T.2", "prerequisiteIds": ["maths_node"] }
+  ]
+}

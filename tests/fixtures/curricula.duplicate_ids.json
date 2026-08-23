@@ -1,0 +1,8 @@
+{
+  "subject": { "id": "dup_fixture", "title": "Duplicate Fixture", "category": "test" },
+  "curriculumVersion": "2026.1",
+  "concepts": [
+    { "id": "same_id", "title": "First", "difficultyLevel": 1, "specRef": "T.1", "prerequisiteIds": [] },
+    { "id": "same_id", "title": "Second", "difficultyLevel": 2, "specRef": "T.2", "prerequisiteIds": [] }
+  ]
+}

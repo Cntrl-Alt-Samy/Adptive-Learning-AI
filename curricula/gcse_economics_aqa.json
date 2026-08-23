@@ -1,0 +1,157 @@
+{
+  "subject": {
+    "id": "gcse_economics_aqa",
+    "title": "GCSE Economics",
+    "category": "humanities",
+    "examBoard": "aqa",
+    "stage": "gcse"
+  },
+  "curriculumVersion": "2026.1",
+  "concepts": [
+    {
+      "id": "eco_scarcity_choice",
+      "title": "Scarcity and choice",
+      "difficultyLevel": 1,
+      "specRef": "3.1.1.1",
+      "prerequisiteIds": [],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Scarcity means finite resources against unlimited wants, forcing economic agents to make choices with opportunity costs.",
+          "specRef": "3.1.1.1"
+        }
+      ]
+    },
+    {
+      "id": "eco_opportunity_cost",
+      "title": "Opportunity cost",
+      "difficultyLevel": 2,
+      "specRef": "3.1.1.2",
+      "prerequisiteIds": ["eco_scarcity_choice"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Opportunity cost is the value of the next best alternative forgone when a choice is made.",
+          "specRef": "3.1.1.2"
+        }
+      ]
+    },
+    {
+      "id": "eco_ppf",
+      "title": "Production possibility frontiers",
+      "difficultyLevel": 3,
+      "specRef": "3.1.1.3",
+      "prerequisiteIds": ["eco_opportunity_cost"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "The PPF plots maximum output combinations of two goods; points inside are inefficient, on the curve efficient, outside unattainable.",
+          "specRef": "3.1.1.3"
+        },
+        {
+          "contentType": "misconception",
+          "text": "A straight-line PPF implies constant opportunity cost; learners often assume bowed-out shape is always constant.",
+          "specRef": "3.1.1.3"
+        }
+      ]
+    },
+    {
+      "id": "eco_demand",
+      "title": "Demand and its determinants",
+      "difficultyLevel": 2,
+      "specRef": "3.1.2.1",
+      "prerequisiteIds": ["eco_scarcity_choice"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Demand is quantity buyers will purchase at each price; the law of demand holds inversely sloping ceteris paribus.",
+          "specRef": "3.1.2.1"
+        }
+      ]
+    },
+    {
+      "id": "eco_supply",
+      "title": "Supply and its determinants",
+      "difficultyLevel": 2,
+      "specRef": "3.1.2.2",
+      "prerequisiteIds": ["eco_scarcity_choice"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Supply is quantity firms will sell at each price; higher prices raise quantity supplied along the upward-sloping curve.",
+          "specRef": "3.1.2.2"
+        }
+      ]
+    },
+    {
+      "id": "eco_market_equilibrium",
+      "title": "Market equilibrium",
+      "difficultyLevel": 4,
+      "specRef": "3.1.2.3",
+      "prerequisiteIds": ["eco_demand", "eco_supply", "eco_ppf"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Equilibrium occurs where demand equals supply; excess demand bids price up, excess supply pushes price down.",
+          "specRef": "3.1.2.3"
+        }
+      ]
+    },
+    {
+      "id": "eco_elasticity",
+      "title": "Price elasticity of demand",
+      "difficultyLevel": 5,
+      "specRef": "3.1.2.4",
+      "prerequisiteIds": ["eco_market_equilibrium"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "PED = %ΔQd / %ΔP; elastic when |PED| > 1, inelastic below 1, guiding revenue effects of price changes.",
+          "specRef": "3.1.2.4"
+        }
+      ]
+    },
+    {
+      "id": "eco_market_failure",
+      "title": "Market failure",
+      "difficultyLevel": 5,
+      "specRef": "3.1.3.1",
+      "prerequisiteIds": ["eco_market_equilibrium"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Market failure occurs when free markets misallocate resources — via externalities, public goods or information gaps.",
+          "specRef": "3.1.3.1"
+        }
+      ]
+    },
+    {
+      "id": "eco_externalities",
+      "title": "Externalities",
+      "difficultyLevel": 6,
+      "specRef": "3.1.3.2",
+      "prerequisiteIds": ["eco_market_failure"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Externalities are costs or benefits imposed on third parties; negative production externalities shift private costs below social costs.",
+          "specRef": "3.1.3.2"
+        }
+      ]
+    },
+    {
+      "id": "eco_gov_intervention",
+      "title": "Government intervention",
+      "difficultyLevel": 6,
+      "specRef": "3.1.3.3",
+      "prerequisiteIds": ["eco_externalities", "eco_elasticity"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Governments correct failure via indirect taxes, subsidies, regulation and tradable permits; effectiveness depends on elasticity.",
+          "specRef": "3.1.3.3"
+        }
+      ]
+    }
+  ]
+}

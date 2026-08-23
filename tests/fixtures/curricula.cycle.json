@@ -1,0 +1,10 @@
+{
+  "subject": { "id": "cycle_fixture", "title": "Cycle Fixture", "category": "test" },
+  "curriculumVersion": "2026.1",
+  "concepts": [
+    { "id": "topic_a", "title": "A", "difficultyLevel": 2, "specRef": "T.1", "prerequisiteIds": ["topic_c"] },
+    { "id": "topic_b", "title": "B", "difficultyLevel": 3, "specRef": "T.2", "prerequisiteIds": ["topic_a"] },
+    { "id": "topic_c", "title": "C", "difficultyLevel": 4, "specRef": "T.3", "prerequisiteIds": ["topic_b"] },
+    { "id": "topic_free", "title": "Free", "difficultyLevel": 1, "specRef": "T.4", "prerequisiteIds": [] }
+  ]
+}

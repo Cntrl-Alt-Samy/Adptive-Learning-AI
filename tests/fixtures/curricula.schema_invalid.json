@@ -1,0 +1,6 @@
+{
+  "subject": { "id": "schema_bad_fixture", "title": "Schema Bad Fixture" },
+  "concepts": [
+    { "id": "MissingSpecRef", "title": "" }
+  ]
+}

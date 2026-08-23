@@ -1,0 +1,7 @@
+{
+  "subject": { "id": "selfloop_fixture", "title": "Self Loop Fixture", "category": "test" },
+  "curriculumVersion": "2026.1",
+  "concepts": [
+    { "id": "narcissus", "title": "Self", "difficultyLevel": 1, "specRef": "T.1", "prerequisiteIds": ["narcissus"] }
+  ]
+}

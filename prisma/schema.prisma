@@ -1,0 +1,300 @@
+// LearnOS v1.1 schema — modelling reference (Doc 05 §4).
+// Deployable ground truth is db/migrations/20260822_learnos_initial_schema.sql;
+// parity asserted via introspection diff in CI (S0-T1).
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum TenantTier {
+  CONSUMER_A
+  MINOR_B
+  ENTERPRISE_C
+}
+
+enum Modality {
+  STEPWISE
+  EXAMPLES
+  VISUAL
+  HANDS_ON
+}
+
+enum MasteryStatus {
+  SOLID
+  PARTIAL
+  NEEDS_WORK
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+  ABANDONED
+}
+
+enum AIMode {
+  PROFILER
+  DIAGNOSTICIAN
+  TUTOR
+  SOCRATIC_COACH
+  ASSESSOR
+  SESSION_REVIEWER
+}
+
+model Tenant {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String   @db.VarChar(255)
+  tierType       TenantTier @default(CONSUMER_A) @map("tier_type")
+  securityPolicy Json     @default("{}") @map("security_policy")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  users User[]
+
+  @@map("tenants")
+}
+
+model User {
+  id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId                String   @map("tenant_id") @db.Uuid
+  clerkId                 String   @unique @map("clerk_id") @db.VarChar(128)
+  email                   String   @unique @db.VarChar(255)
+  fullName                String?  @map("full_name") @db.VarChar(255)
+  isMinor                 Boolean  @default(false) @map("is_minor")
+  parentalConsentVerified Boolean  @default(false) @map("parental_consent_verified")
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz
+  lastActiveAt            DateTime @default(now()) @map("last_active_at") @db.Timestamptz
+
+  tenant         Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  profile        LearnerProfile?
+  learningDna    LearningDNA[]
+  sessions       Session[]
+  spacedRepQueue SpacedRepQueue[]
+  userBadges     UserBadge[]
+  certificates   Certificate[]
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+model LearnerProfile {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @unique @map("user_id") @db.Uuid
+  defaultModality Modality @default(EXAMPLES) @map("default_modality")
+  goalPreferences Json     @default("{}") @map("goal_preferences")
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("learner_profiles")
+}
+
+model Subject {
+  id            String   @id @db.VarChar(64)
+  title         String   @db.VarChar(255)
+  category      String   @db.VarChar(128)
+  examBoard     String?  @map("exam_board") @db.VarChar(128)
+  totalConcepts Int      @default(0) @map("total_concepts")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  concepts     ConceptNode[]
+  sessions     Session[]
+  badges       Badge[]
+  certificates Certificate[]
+
+  @@map("subjects")
+}
+
+model ConceptNode {
+  id                   String @id @db.VarChar(64)
+  subjectId            String @map("subject_id") @db.VarChar(64)
+  title                String @db.VarChar(255)
+  difficultyLevel      Int    @default(1) @map("difficulty_level")
+  canonicalDefinitions Json   @default("{}") @map("canonical_definitions")
+
+  subject           Subject               @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  prerequisites     ConceptPrerequisite[] @relation("ConceptPrerequisites")
+  dependentConcepts ConceptPrerequisite[] @relation("ConceptDependents")
+  learningDna       LearningDNA[]
+  spacedRepQueue    SpacedRepQueue[]
+
+  @@index([subjectId])
+  @@map("concept_nodes")
+}
+
+model ConceptPrerequisite {
+  conceptId      String @map("concept_id") @db.VarChar(64)
+  prerequisiteId String @map("prerequisite_id") @db.VarChar(64)
+
+  concept      ConceptNode @relation("ConceptPrerequisites", fields: [conceptId], references: [id], onDelete: Cascade)
+  prerequisite ConceptNode @relation("ConceptDependents", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@id([conceptId, prerequisiteId])
+  @@map("concept_prerequisites")
+}
+
+model LearningDNA {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String        @map("user_id") @db.Uuid
+  conceptId      String        @map("concept_id") @db.VarChar(64)
+  masteryScore   Float         @default(0.0) @map("mastery_score")
+  status         MasteryStatus @default(NEEDS_WORK)
+  decayRate      Float         @default(0.05) @map("decay_rate")
+  lastReviewedAt DateTime      @default(now()) @map("last_reviewed_at") @db.Timestamptz
+
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept ConceptNode @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conceptId])
+  @@index([userId, status])
+  @@index([lastReviewedAt]) // Crucial for cursor decay batches (B-02)
+  @@map("learning_dna")
+}
+
+model Session {
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             String       @map("user_id") @db.Uuid
+  subjectId          String       @map("subject_id") @db.VarChar(64)
+  targetDurationMin  Int          @map("target_duration_min")
+  calibratedLevel    String?      @map("calibrated_level") @db.VarChar(64)
+  preKnowledgeScore  Float?       @map("pre_knowledge_score")
+  postKnowledgeScore Float?       @map("post_knowledge_score")
+  status             SessionStatus @default(ACTIVE)
+  startedAt          DateTime     @default(now()) @map("started_at") @db.Timestamptz
+  completedAt        DateTime?    @map("completed_at") @db.Timestamptz
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  checkpoints SessionCheckpoint[]
+  turns       SessionTurn[]
+  assessments AssessmentRecord[]
+  audits      AIExecutionAudit[]
+
+  @@index([userId, status])
+  @@map("sessions")
+}
+
+model SessionCheckpoint {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId    String   @map("session_id") @db.Uuid
+  stepNumber   Int      @map("step_number")
+  activeMode   AIMode   @map("active_mode")
+  statePayload Json     @map("state_payload")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, stepNumber])
+  @@map("session_checkpoints")
+}
+
+model SessionTurn {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId         String   @map("session_id") @db.Uuid
+  turnIndex         Int      @map("turn_index")
+  userMessage       String   @map("user_message") @db.Text
+  assistantResponse String   @map("assistant_response") @db.Text
+  latencyMs         Int      @map("latency_ms")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, turnIndex])
+  @@map("session_turns")
+}
+
+model AssessmentRecord {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId     String   @map("session_id") @db.Uuid
+  conceptId     String   @map("concept_id") @db.VarChar(64)
+  tierLevel     Int      @map("tier_level")
+  question      String   @db.Text
+  learnerAnswer String   @map("learner_answer") @db.Text
+  verdict       String   @db.VarChar(32)
+  scorePercent  Float    @map("score_percent")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, conceptId])
+  @@map("assessment_records")
+}
+
+model SpacedRepQueue {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             String   @map("user_id") @db.Uuid
+  conceptId          String   @map("concept_id") @db.VarChar(64)
+  scheduledFor       DateTime @map("scheduled_for") @db.Timestamptz
+  reviewIntervalDays Int      @default(1) @map("review_interval_days")
+  completed          Boolean  @default(false)
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept ConceptNode @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@index([userId, scheduledFor, completed])
+  @@map("spaced_rep_queue")
+}
+
+model Badge {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subjectId   String   @map("subject_id") @db.VarChar(64)
+  title       String   @db.VarChar(128)
+  description String   @db.Text
+  iconUrl     String   @map("icon_url") @db.VarChar(255)
+  criteria    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  subject    Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  badgeId   String   @map("badge_id") @db.Uuid
+  awardedAt DateTime @default(now()) @map("awarded_at") @db.Timestamptz
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Certificate {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  subjectId        String   @map("subject_id") @db.VarChar(64)
+  verificationCode String   @unique @map("verification_code") @db.VarChar(64)
+  certificateUrl   String   @map("certificate_url") @db.VarChar(255)
+  issuedAt         DateTime @default(now()) @map("issued_at") @db.Timestamptz
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@map("certificates")
+}
+
+model AIExecutionAudit {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId      String   @map("session_id") @db.Uuid
+  modelUsed      String   @map("model_used") @db.VarChar(64)
+  promptCacheHit Boolean  @default(false) @map("prompt_cache_hit")
+  inputTokens    Int      @map("input_tokens")
+  outputTokens   Int      @map("output_tokens")
+  costGbp        Float    @map("cost_gbp")
+  latencyMs      Int      @map("latency_ms")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("ai_execution_audits")
+}

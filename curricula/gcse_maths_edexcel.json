@@ -1,0 +1,200 @@
+{
+  "subject": {
+    "id": "gcse_maths_edexcel",
+    "title": "GCSE Mathematics",
+    "category": "mathematics",
+    "examBoard": "edexcel",
+    "stage": "gcse"
+  },
+  "curriculumVersion": "2026.1",
+  "concepts": [
+    {
+      "id": "num_place_value",
+      "title": "Place value and ordering numbers",
+      "difficultyLevel": 1,
+      "specRef": "1.1a",
+      "prerequisiteIds": [],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Place value assigns a digit its value by position: in 4,271 the digit 4 represents 4 thousands because it sits in the thousands column.",
+          "specRef": "1.1a"
+        },
+        {
+          "contentType": "misconception",
+          "text": "Learners often read 0.25 as 'bigger than 0.5' because 25 > 5; counter with money: £0.25 vs £0.50.",
+          "specRef": "1.1a"
+        }
+      ]
+    },
+    {
+      "id": "num_four_operations",
+      "title": "The four arithmetic operations",
+      "difficultyLevel": 2,
+      "specRef": "1.1c",
+      "prerequisiteIds": ["num_place_value"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Addition, subtraction, multiplication and division are the four operations; column methods align digits by place value before operating.",
+          "specRef": "1.1c"
+        }
+      ]
+    },
+    {
+      "id": "num_order_of_operations",
+      "title": "Order of operations (BIDMAS)",
+      "difficultyLevel": 2,
+      "specRef": "1.1d",
+      "prerequisiteIds": ["num_four_operations"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "BIDMAS fixes evaluation order: Brackets, Indices, Division/Multiplication (left to right), Addition/Subtraction (left to right).",
+          "specRef": "1.1d"
+        },
+        {
+          "contentType": "worked_example",
+          "text": "3 + 4 × 2² = 3 + 4 × 8 = 35, not (3+4)×4 = 28.",
+          "specRef": "1.1d"
+        }
+      ]
+    },
+    {
+      "id": "num_fractions_basics",
+      "title": "Fraction arithmetic",
+      "difficultyLevel": 3,
+      "specRef": "1.3a",
+      "prerequisiteIds": ["num_four_operations", "num_order_of_operations"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "A fraction a/b denotes a parts of b equal pieces. To add fractions, rewrite over a common denominator then add numerators.",
+          "specRef": "1.3a"
+        }
+      ]
+    },
+    {
+      "id": "num_percentages",
+      "title": "Percentage change and multipliers",
+      "difficultyLevel": 4,
+      "specRef": "1.3e",
+      "prerequisiteIds": ["num_fractions_basics"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Percentage change uses the multiplier method: increase x% ⇒ multiply by (1 + x/100); decrease x% ⇒ multiply by (1 − x/100).",
+          "specRef": "1.3e"
+        },
+        {
+          "contentType": "misconception",
+          "text": "A 20% rise followed by a 20% fall does not return to the start: ×1.2×0.8 = ×0.96.",
+          "specRef": "1.3e"
+        }
+      ]
+    },
+    {
+      "id": "num_ratio_proportion",
+      "title": "Ratio and proportion",
+      "difficultyLevel": 4,
+      "specRef": "1.6a",
+      "prerequisiteIds": ["num_fractions_basics"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "A ratio a:b shares a total in parts of size total/(a+b). Direct proportion means y = kx for constant k.",
+          "specRef": "1.6a"
+        }
+      ]
+    },
+    {
+      "id": "alg_expressions",
+      "title": "Algebraic expressions and substitution",
+      "difficultyLevel": 3,
+      "specRef": "2.1a",
+      "prerequisiteIds": ["num_four_operations"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "An algebraic expression combines variables, constants and operations; substituting values turns it into an arithmetic computation.",
+          "specRef": "2.1a"
+        }
+      ]
+    },
+    {
+      "id": "alg_linear_equations",
+      "title": "Solving linear equations",
+      "difficultyLevel": 4,
+      "specRef": "2.2a",
+      "prerequisiteIds": ["alg_expressions"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Solve linear equations by applying inverse operations to isolate the variable, performing the same operation on both sides.",
+          "specRef": "2.2a"
+        }
+      ]
+    },
+    {
+      "id": "alg_simultaneous_equations",
+      "title": "Simultaneous equations",
+      "difficultyLevel": 6,
+      "specRef": "2.4a",
+      "prerequisiteIds": ["alg_linear_equations"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Two linear equations are solved simultaneously by elimination or substitution to find the unique point satisfying both.",
+          "specRef": "2.4a"
+        }
+      ]
+    },
+    {
+      "id": "alg_quadratic_factoring",
+      "title": "Factorising quadratics",
+      "difficultyLevel": 7,
+      "specRef": "2.4b",
+      "prerequisiteIds": ["alg_linear_equations"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Factorise x² + bx + c by finding two numbers multiplying to c and summing to b: x² − 7x + 12 = (x−3)(x−4).",
+          "specRef": "2.4b"
+        },
+        {
+          "contentType": "misconception",
+          "text": "(x+3)(x+4) expands to x² + 7x + 7 when learners add instead of multiply the constants.",
+          "specRef": "2.4b"
+        }
+      ]
+    },
+    {
+      "id": "graph_quadratics",
+      "title": "Quadratic graphs and roots",
+      "difficultyLevel": 7,
+      "specRef": "5.2a",
+      "prerequisiteIds": ["alg_quadratic_factoring"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "The parabola y = ax² + bx + c crosses the x-axis at roots where y = 0; factorising reveals these intercepts.",
+          "specRef": "5.2a"
+        }
+      ]
+    },
+    {
+      "id": "geo_angle_rules",
+      "title": "Angle rules on parallel lines",
+      "difficultyLevel": 3,
+      "specRef": "3.1a",
+      "prerequisiteIds": [],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Parallel lines cut by a transversal form corresponding, alternate and co-interior angles; co-interior angles sum to 180°.",
+          "specRef": "3.1a"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "subject": { "id": "dangling_fixture", "title": "Dangling Ref Fixture", "category": "test" },
+  "curriculumVersion": "2026.1",
+  "concepts": [
+    { "id": "real_node", "title": "Real", "difficultyLevel": 1, "specRef": "T.1", "prerequisiteIds": ["ghost_node"] }
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "subject": {
+    "id": "python_programming",
+    "title": "Python Programming Foundations",
+    "category": "computer_science",
+    "stage": "gcse"
+  },
+  "curriculumVersion": "2026.1",
+  "concepts": [
+    {
+      "id": "py_setup_running",
+      "title": "Running a Python program",
+      "difficultyLevel": 1,
+      "specRef": "CS-1.1",
+      "prerequisiteIds": [],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Python executes scripts top-to-bottom via the interpreter: python main.py runs the file as the entry module.",
+          "specRef": "CS-1.1"
+        }
+      ]
+    },
+    {
+      "id": "py_variables_types",
+      "title": "Variables and core types",
+      "difficultyLevel": 1,
+      "specRef": "CS-1.2",
+      "prerequisiteIds": ["py_setup_running"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Variables bind names to values; core types include int, float, str and bool, checked with type(x).",
+          "specRef": "CS-1.2"
+        },
+        {
+          "contentType": "misconception",
+          "text": "'5' + 3 raises TypeError — strings do not auto-coerce to ints in Python.",
+          "specRef": "CS-1.2"
+        }
+      ]
+    },
+    {
+      "id": "py_conditionals",
+      "title": "Conditionals (if/elif/else)",
+      "difficultyLevel": 2,
+      "specRef": "CS-2.1",
+      "prerequisiteIds": ["py_variables_types"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "if/elif/else branches on boolean expressions; indentation defines the block scope in Python.",
+          "specRef": "CS-2.1"
+        }
+      ]
+    },
+    {
+      "id": "py_lists",
+      "title": "Lists and indexing",
+      "difficultyLevel": 2,
+      "specRef": "CS-2.2",
+      "prerequisiteIds": ["py_variables_types"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Lists are ordered, mutable sequences indexed from 0; append adds to the end, len() reports size.",
+          "specRef": "CS-2.2"
+        }
+      ]
+    },
+    {
+      "id": "py_loops",
+      "title": "Iteration (for/while)",
+      "difficultyLevel": 3,
+      "specRef": "CS-2.3",
+      "prerequisiteIds": ["py_conditionals", "py_lists"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "for loops iterate over iterables; while loops repeat until a condition fails. break exits early, continue skips an iteration.",
+          "specRef": "CS-2.3"
+        },
+        {
+          "contentType": "worked_example",
+          "text": "total = 0\nfor n in [1,2,3]:\n    total += n\n# total == 6",
+          "specRef": "CS-2.3"
+        }
+      ]
+    },
+    {
+      "id": "py_string_methods",
+      "title": "String methods",
+      "difficultyLevel": 3,
+      "specRef": "CS-2.4",
+      "prerequisiteIds": ["py_variables_types"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Strings are immutable sequences: .upper(), .split(), .strip() return new strings rather than mutating.",
+          "specRef": "CS-2.4"
+        }
+      ]
+    },
+    {
+      "id": "py_functions",
+      "title": "Defining functions",
+      "difficultyLevel": 4,
+      "specRef": "CS-3.1",
+      "prerequisiteIds": ["py_loops", "py_string_methods"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "def name(params): packages reusable logic; return sends a value back to the caller.",
+          "specRef": "CS-3.1"
+        }
+      ]
+    },
+    {
+      "id": "py_dicts",
+      "title": "Dictionaries",
+      "difficultyLevel": 4,
+      "specRef": "CS-3.2",
+      "prerequisiteIds": ["py_lists"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "Dictionaries map unique keys to values with O(1) average lookup: scores['maya'] = 92.",
+          "specRef": "CS-3.2"
+        }
+      ]
+    },
+    {
+      "id": "py_file_io",
+      "title": "File input/output",
+      "difficultyLevel": 5,
+      "specRef": "CS-4.1",
+      "prerequisiteIds": ["py_functions"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "with open(path) as f: opens files under context management guaranteeing closure; modes r/w/a control behaviour.",
+          "specRef": "CS-4.1"
+        }
+      ]
+    },
+    {
+      "id": "py_oop_classes",
+      "title": "Classes and objects",
+      "difficultyLevel": 6,
+      "specRef": "CS-5.1",
+      "prerequisiteIds": ["py_dicts", "py_file_io"],
+      "contentChunks": [
+        {
+          "contentType": "canonical_definition",
+          "text": "A class bundles state (attributes) and behaviour (methods); __init__ initialises instances constructed by calling the class.",
+          "specRef": "CS-5.1"
+        }
+      ]
+    }
+  ]
+}
