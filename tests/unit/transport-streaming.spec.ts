@@ -23,6 +23,7 @@ afterEach(() => {
 });
 
 const baseReq = {
+  provider: 'openai' as const,
   model: 'test-model',
   systemPrefix: 'STATIC',
   messages: [{ role: 'user' as const, content: 'hi' }]
