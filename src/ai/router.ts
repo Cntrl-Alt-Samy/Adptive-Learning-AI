@@ -47,6 +47,9 @@ export interface ResolvedRoute extends RouteDecision {
 
 /** Exhaustive decision table: (mode, step) -> tier. Unknown ⇒ 2. */
 export function decideTier(mode: AiMode | string | undefined | null, step?: number): RouteDecision {
+  // Step 4 roadmap generation rides Tier 1 regardless of mode.
+  if (step === 4) return { tier: 1, reason: 'STEP_4_ROADMAP_GENERATION' };
+
   const normalized = typeof mode === 'string' ? mode.toUpperCase() : '';
   switch (normalized) {
     case 'TUTOR':
@@ -59,8 +62,6 @@ export function decideTier(mode: AiMode | string | undefined | null, step?: numb
     case 'SESSION_REVIEWER':
       return { tier: 3, reason: `MODE_${normalized}_STRUCTURED_EXTRACTION` };
     default:
-      // Step 4 roadmap generation rides Tier 1 regardless of mode.
-      if (step === 4) return { tier: 1, reason: 'STEP_4_ROADMAP_GENERATION' };
       // Fail-safe: default cheap-but-capable.
       return { tier: 2, reason: 'UNKNOWN_MODE_FAIL_SAFE' };
   }

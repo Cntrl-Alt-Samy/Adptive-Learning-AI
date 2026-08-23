@@ -1,3 +1,5 @@
+import type pg from 'pg';
+
 import { z } from 'zod';
 
 /**

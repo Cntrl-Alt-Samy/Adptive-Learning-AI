@@ -121,10 +121,9 @@ export class CircuitBreaker {
       throw new Error(`CIRCUIT_OPEN:${providerKey}`);
     }
     const startedAt = this.clock.now();
+    let result: T;
     try {
-      const result = await fn();
-      this.recordSuccess(providerKey);
-      return result;
+      result = await fn();
     } catch (err) {
       const elapsed = this.clock.now() - startedAt;
       if (elapsed >= this.requestTimeoutMs && !(err instanceof Error && err.name === 'AbortError')) {
@@ -133,11 +132,15 @@ export class CircuitBreaker {
       }
       this.recordFailure(providerKey);
       throw err;
-    } finally {
-      // Defensive: never leave probe slots dangling on unexpected paths.
-      const rt = this.runtime(providerKey);
-      if (this.getState(providerKey) !== 'HALF_OPEN') rt.probesInFlight = 0;
     }
+    // Resolved-but-slow calls count as failures too (Doc 03 §11 >4s policy).
+    const elapsedOk = this.clock.now() - startedAt;
+    if (elapsedOk >= this.requestTimeoutMs) {
+      this.recordFailure(providerKey);
+      throw new TimeoutError(providerKey, elapsedOk);
+    }
+    this.recordSuccess(providerKey);
+    return result;
   }
 
   private trip(rt: ProviderRuntime): void {

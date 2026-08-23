@@ -12,7 +12,7 @@ export interface ScriptedCall {
 
 export interface TransportScript {
   when?: (req: TransportRequest, callIndex: number) => boolean;
-  chunks: TransportChunk[];
+  chunks?: TransportChunk[];
   /** Throw instead of streaming (simulates provider failure). */
   error?: Error;
 }
@@ -34,7 +34,7 @@ export function createScriptedTransport(scripts: TransportScript[]): ScriptedTra
         scripts[scripts.length - 1];
       if (!script) throw new Error('No scripted response configured');
       if (script.error) throw script.error;
-      yield* script.chunks;
+      if (script.chunks) yield* script.chunks;
     }
   };
 }
