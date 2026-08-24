@@ -54,6 +54,7 @@ model Tenant {
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   users User[]
+  topicLocks CohortTopicLock[]
 
   @@map("tenants")
 }
@@ -76,6 +77,8 @@ model User {
   spacedRepQueue SpacedRepQueue[]
   userBadges     UserBadge[]
   certificates   Certificate[]
+  consentEvents  ConsentEvent[]
+  lockedTopics   CohortTopicLock[] @relation("CohortTopicLocks")
 
   @@index([tenantId])
   @@map("users")
@@ -281,6 +284,39 @@ model Certificate {
   subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@map("certificates")
+}
+
+/// S5-T6 — educator syllabus topic locking (Doc 03 §10 / F11).
+model CohortTopicLock {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  conceptId String   @map("concept_id") @db.VarChar(64)
+  lockedBy  String?  @map("locked_by") @db.Uuid
+  reason    String   @default("") @db.VarChar(255)
+  lockedAt  DateTime @default(now()) @map("locked_at") @db.Timestamptz
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  locker User?   @relation("CohortTopicLocks", fields: [lockedBy], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, conceptId])
+  @@index([tenantId])
+  @@map("cohort_topic_locks")
+}
+
+/// S5-T2 — parental consent audit trail (Doc 04 §7.1); jti replay detection.
+model ConsentEvent {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  action      String    @db.VarChar(16)
+  guardianRef String    @default("") @map("guardian_ref") @db.VarChar(255)
+  jti         String?   @unique @db.VarChar(64)
+  expiresAt   DateTime? @map("expires_at") @db.Timestamptz
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("consent_events")
 }
 
 model AIExecutionAudit {

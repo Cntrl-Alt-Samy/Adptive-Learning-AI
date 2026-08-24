@@ -22,6 +22,11 @@ export interface PlannerNode {
   difficultyLevel: number;
   estimatedMinutes: number;
   prerequisiteIds: string[];
+  /**
+   * S5-T6 educator topic lock (F11): locked concepts are excluded from every
+   * plan while true, and their descendants cascade as PREREQ_EXCLUDED.
+   */
+  locked?: boolean;
 }
 
 export const TIME_BUDGETS = [15, 30, 45, 60, 90] as const;
@@ -29,7 +34,10 @@ export type TimeBudget = (typeof TIME_BUDGETS)[number];
 
 export interface RoadmapPlan {
   planned: Array<{ conceptId: string; estimatedMinutes: number; difficultyLevel: number }>;
-  excluded: Array<{ conceptId: string; reason: 'BUDGET_EXCEEDED' | 'PREREQ_EXCLUDED' }>;
+  excluded: Array<{
+    conceptId: string;
+    reason: 'BUDGET_EXCEEDED' | 'PREREQ_EXCLUDED' | 'TOPIC_LOCKED';
+  }>;
   totalMinutes: number;
 }
 
@@ -107,25 +115,62 @@ export function planRoadmap(
   const focus = [...new Set(focusIds.filter((id) => byId.has(id)))];
   const focusSet = new Set(focus);
 
-  // Internal indegree/children maps restricted to the focus subgraph.
+  // Full adjacency over the focus subgraph (lock-independent) used for
+  // reachability cascades.
+  const allChildren = new Map<string, string[]>();
+  for (const id of focus) {
+    allChildren.set(id, []);
+    for (const pre of byId.get(id)!.prerequisiteIds) {
+      if (focusSet.has(pre) && pre !== id) allChildren.get(pre)?.push(id);
+    }
+  }
+
+  // S5-T6: locked topics plus every transitive descendant are removed from
+  // the schedulable graph (a descendant whose prerequisite is locked cannot
+  // be taught). Locked roots record TOPIC_LOCKED; descendants record
+  // PREREQ_EXCLUDED.
+  const blocked = new Set<string>();
+  const blockedReasons = new Map<string, 'TOPIC_LOCKED' | 'PREREQ_EXCLUDED'>();
+  {
+    const stack = focus.filter((id) => byId.get(id)!.locked === true);
+    for (const root of stack) {
+      if (!blocked.has(root)) {
+        blocked.add(root);
+        blockedReasons.set(root, 'TOPIC_LOCKED');
+      }
+    }
+    while (stack.length > 0) {
+      const id = stack.pop()!;
+      for (const child of allChildren.get(id) ?? []) {
+        if (blocked.has(child)) continue;
+        blocked.add(child);
+        blockedReasons.set(child, 'PREREQ_EXCLUDED');
+        stack.push(child);
+      }
+    }
+  }
+  const graphIds = focus.filter((id) => !blocked.has(id));
+  const graphSet = new Set(graphIds);
+
+  // Internal indegree/children maps restricted to the schedulable subgraph.
   const indegree = new Map<string, number>();
   const children = new Map<string, string[]>();
-  for (const id of focus) {
+  for (const id of graphIds) {
     indegree.set(id, 0);
     children.set(id, []);
   }
-  for (const id of focus) {
+  for (const id of graphIds) {
     const node = byId.get(id)!;
     for (const pre of node.prerequisiteIds) {
-      if (focusSet.has(pre) && pre !== id) {
+      if (graphSet.has(pre)) {
         indegree.set(id, (indegree.get(id) ?? 0) + 1);
-        children.get(pre)!.push(id);
+        children.get(pre)?.push(id);
       }
     }
   }
 
   const heap = new MinHeap();
-  for (const id of focus) {
+  for (const id of graphIds) {
     if ((indegree.get(id) ?? 0) === 0) {
       const n = byId.get(id)!;
       heap.push({ id, difficulty: n.difficultyLevel, minutes: n.estimatedMinutes, key: tieBreak(seed, id) });
@@ -135,6 +180,11 @@ export function planRoadmap(
   const planned: RoadmapPlan['planned'] = [];
   const excluded: RoadmapPlan['excluded'] = [];
   let used = 0;
+
+  for (const id of blocked) {
+    excluded.push({ conceptId: id, reason: blockedReasons.get(id)! });
+  }
+  excluded.sort((a, b) => a.conceptId.localeCompare(b.conceptId));
 
   const cascadeExclude = (rootId: string): void => {
     // Descendants of an unplanned node can never be scheduled.

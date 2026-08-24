@@ -246,12 +246,18 @@ ALTER TABLE session_turns FORCE ROW LEVEL SECURITY;
 --   * INSTRUCTOR/ADMIN same-tenant cohort: raw access ONLY when the target is
 --     an adult OR parental consent is verified (B-03 Tier B > C precedence).
 --   * Everyone else (learners viewing others, any cross-tenant actor): DENY.
+-- NOTE: current_setting(name, true) yields EMPTY STRING (not NULL) after a
+-- rolled-back SET LOCAL cycle, so every ::uuid cast must pass through
+-- NULLIF(..., '') to stay null-safe (S5 lock.enforcement regression).
 DROP POLICY IF EXISTS educator_cohort_transcript_policy ON session_turns;
 CREATE POLICY educator_cohort_transcript_policy ON session_turns
     FOR SELECT
     USING (
         -- Can view if user is self
-        session_id IN (SELECT id FROM sessions WHERE user_id = current_setting('app.current_user_id', true)::uuid)
+        session_id IN (
+            SELECT id FROM sessions
+            WHERE user_id = NULLIF(current_setting('app.current_user_id', true), '')::uuid
+        )
         OR
         -- Can view if educator/admin, BUT ONLY IF user is NOT a minor OR parental consent is explicitly verified
         (
@@ -259,7 +265,7 @@ CREATE POLICY educator_cohort_transcript_policy ON session_turns
             AND session_id IN (
                 SELECT s.id FROM sessions s
                 JOIN users u ON s.user_id = u.id
-                WHERE u.tenant_id = current_setting('app.current_tenant_id', true)::uuid
+                WHERE u.tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid
                 AND (u.is_minor = FALSE OR u.parental_consent_verified = TRUE)
             )
         )
@@ -281,3 +287,52 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE O
 -- ---------------------------------------------------------------------------
 ALTER TABLE learning_dna ADD COLUMN IF NOT EXISTS last_decayed_at timestamptz;
 CREATE INDEX IF NOT EXISTS learning_dna_last_decayed_idx ON learning_dna(last_decayed_at);
+
+-- ============================================================================
+-- Sprint 5 — Privacy Enclaves, Credentialing & Educator Portal
+-- ============================================================================
+
+-- ---------------------------------------------------------------------------
+-- S5-T6 (Doc 03 §10 / F11) — educator syllabus topic locking. Locked concepts
+-- are excluded from every roadmap plan generated for the cohort until the
+-- educator releases the topic. Unique per (tenant, concept).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS cohort_topic_locks (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id  uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  concept_id varchar(64) NOT NULL,
+  locked_by  uuid REFERENCES users(id) ON DELETE SET NULL,
+  reason     varchar(255) NOT NULL DEFAULT '',
+  locked_at  timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT cohort_topic_locks_tenant_concept_uq UNIQUE (tenant_id, concept_id)
+);
+CREATE INDEX IF NOT EXISTS cohort_topic_locks_tenant_idx ON cohort_topic_locks(tenant_id);
+
+-- ---------------------------------------------------------------------------
+-- S5-T2 (Doc 04 §7.1) — parental consent audit trail. Every issued/revoked
+-- consent token is recorded; jti uniqueness makes replayed tokens detectable
+-- at rest as well as at verification time.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS consent_events (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  action      varchar(16) NOT NULL CHECK (action IN ('ISSUE', 'REVOKE')),
+  guardian_ref varchar(255) NOT NULL DEFAULT '',
+  jti         varchar(64),
+  expires_at  timestamptz,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT consent_events_jti_uq UNIQUE (jti)
+);
+CREATE INDEX IF NOT EXISTS consent_events_user_idx ON consent_events(user_id);
+
+-- ---------------------------------------------------------------------------
+-- S5-T3 (B-03 defense in depth) — aggregation service role. Reads only
+-- aggregate-safe tables for cohort analytics; raw transcripts are NEVER
+-- granted to this role (absence of grant = deny under least privilege).
+-- ---------------------------------------------------------------------------
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_aggregator') THEN CREATE ROLE app_aggregator NOLOGIN; END IF;
+END $$;
+GRANT USAGE ON SCHEMA public TO app_aggregator;
+GRANT SELECT ON learning_dna, assessment_records, concept_nodes, subjects,
+               badges, user_badges, certificates TO app_aggregator;

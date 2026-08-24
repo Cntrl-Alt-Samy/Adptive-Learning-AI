@@ -53,7 +53,7 @@ suite('rls-truth-table.spec — S0-T2 gate', () => {
       `INSERT INTO subjects (id, title, category) VALUES ('s1', 'Truth Table Subject', 'test') ON CONFLICT (id) DO NOTHING`
     );
     // Let the test connection assume the NOLOGIN app roles.
-    await adminClient.query(`GRANT app_learner, app_instructor, app_admin TO current_user`);
+    await adminClient.query(`GRANT app_learner, app_instructor, app_admin, app_aggregator TO current_user`);
 
     const tenantIds: Record<string, string> = {};
     for (const key of ['T1', 'T2'] as const) {
@@ -174,5 +174,39 @@ suite('rls-truth-table.spec — S0-T2 gate', () => {
     }
 
     expect(failures, failures.join('\n')).toEqual([]);
+  }, 60_000);
+
+  /**
+   * S5 regression cells: the aggregation service role must NEVER read raw
+   * transcript rows for any profile — blocked either by zero visibility
+   * (policy) or explicit permission denial (missing grant, code 42501).
+   */
+  /** Aggregator probe returns ZERO, DENIED, or LEAK (visibility failure). */
+  async function aggregatorProbe(ownerUserId: string): Promise<'ZERO' | 'DENIED' | 'LEAK'> {
+    await adminClient.query('BEGIN');
+    try {
+      await adminClient.query(`SET LOCAL ROLE app_aggregator`);
+      const res = await adminClient.query(
+        `SELECT count(*)::int AS n
+           FROM session_turns t
+           JOIN sessions s ON s.id = t.session_id
+          WHERE s.user_id = $1`,
+        [ownerUserId]
+      );
+      return (res.rows[0] as { n: number }).n === 0 ? 'ZERO' : 'LEAK';
+    } catch (err) {
+      expect((err as { code?: string }).code, 'expected permission denied').toBe('42501');
+      return 'DENIED';
+    } finally {
+      await adminClient.query('ROLLBACK');
+    }
+  }
+
+  it('S5 regression: app_aggregator blocked from raw transcripts across all profiles', async () => {
+    const owners = ['learner_adult', 'learner_minor_consent', 'learner_minor_no_consent'];
+    for (const label of owners) {
+      const probe = users.get(label)!;
+      expect(await aggregatorProbe(probe.id), `aggregator/${label}`).not.toBe('LEAK');
+    }
   }, 60_000);
 });

@@ -40,7 +40,9 @@ const EXPECTED_TABLES: Record<string, string[]> = {
   certificates: ['id', 'user_id', 'subject_id', 'verification_code', 'certificate_url', 'issued_at'],
   ai_execution_audits: [
     'id', 'session_id', 'model_used', 'prompt_cache_hit', 'input_tokens', 'output_tokens', 'cost_gbp', 'latency_ms', 'created_at'
-  ]
+  ],
+  cohort_topic_locks: ['id', 'tenant_id', 'concept_id', 'locked_by', 'reason', 'locked_at'],
+  consent_events: ['id', 'user_id', 'action', 'guardian_ref', 'jti', 'expires_at', 'created_at']
 };
 
 async function canConnect(url: string): Promise<boolean> {
@@ -87,9 +89,9 @@ suite('migration.spec — S0-T1 gate', () => {
     await expect(client.query(migrationSql)).resolves.toBeDefined();
   }, 30_000);
 
-  it('introspection matches the Prisma model manifest (16 tables, exact columns)', async () => {
+  it('introspection matches the Prisma model manifest (18 tables, exact columns)', async () => {
     const tableNames = Object.keys(EXPECTED_TABLES);
-    expect(tableNames).toHaveLength(16);
+    expect(tableNames).toHaveLength(18);
 
     for (const [table, expectedColumns] of Object.entries(EXPECTED_TABLES)) {
       const res = await client.query(
