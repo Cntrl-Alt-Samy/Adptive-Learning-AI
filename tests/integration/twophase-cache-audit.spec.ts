@@ -1,12 +1,17 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import 'dotenv/config';
 import pg from 'pg';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { loadEnv } from '../../src/config/env.js';
 import { PgCheckpointStore } from '../../src/state/checkpoint-store.js';
 import { PgAuditSink, computeCacheHitRate } from '../../src/ai/cost-audit.js';
 import { runTurn } from '../../src/api/sse/turn-route.js';
 import { createScriptedTransport, textTurn } from '../../src/ai/mock-transport.js';
 import { CircuitBreaker } from '../../src/ai/breaker.js';
+
+const MIGRATION = join(process.cwd(), 'db', 'migrations', '20260822_learnos_initial_schema.sql');
 
 /**
  * twophase + cache.audit integration gates — REAL Postgres via the migration
@@ -45,19 +50,34 @@ describe.skipIf(!reachable)('twophase + cache.audit gates (Postgres)', () => {
   let audit!: PgAuditSink;
 
   beforeAll(async () => {
+    // Apply the migration if this is the first spec to run (or if another spec
+    // left the schema reset). This makes the suite self-sufficient regardless
+    // of test file execution order.
+    const setupClient = await pool!.connect();
+    try {
+      const exists = await setupClient.query(
+        `SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='tenants'`
+      );
+      if (exists.rowCount === 0) {
+        await setupClient.query(readFileSync(MIGRATION, 'utf8'));
+      }
+    } finally {
+      setupClient.release();
+    }
+
     const client = await pool!.connect();
     try {
       tenantId = randomUUID();
       userId = randomUUID();
       subjectId = `test-sub-${RUN_ID}`;
       sessionId = randomUUID();
-      await client.query(`INSERT INTO tenants (id, name) VALUES ($1, $1) ON CONFLICT DO NOTHING`, [tenantId]);
+      await client.query(`INSERT INTO tenants (id, name) VALUES ($1::uuid, $2) ON CONFLICT DO NOTHING`, [tenantId, tenantId]);
       await client.query(
         `INSERT INTO users (id, tenant_id, clerk_id, email) VALUES ($1, $2, $3, $4)`,
         [userId, tenantId, `clerk-${RUN_ID}`, `${RUN_ID}@test.local`]
       );
       await client.query(
-        `INSERT INTO subjects (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING`,
+        `INSERT INTO subjects (id, title, category) VALUES ($1, $2, 'test') ON CONFLICT (id) DO NOTHING`,
         [subjectId, `Test Subject ${RUN_ID}`]
       );
       await client.query(
@@ -173,13 +193,20 @@ describe.skipIf(!reachable)('twophase + cache.audit gates (Postgres)', () => {
 
   it('cache.audit: second identical turn reports prompt_cache_hit and audit rows persist £cost', async () => {
     // Scripted transport simulates provider prefix caching: hit on repeat calls.
-    let calls = 0;
+    // Scripts are matched by callIndex — chunks arrays are static per script, so
+    // a conditional spread would be evaluated once and lose the per-call flag.
     const cachingTransport = createScriptedTransport([
       {
-        when: () => true,
+        when: (_req, callIndex) => callIndex > 0,
         chunks: [
           { type: 'token', text: 'answer ' },
-          ...(calls++ > 0 ? [{ type: 'usage' as const, inputTokens: 1100, outputTokens: 100, cacheHit: true }] : [{ type: 'usage' as const, inputTokens: 1100, outputTokens: 100, cacheHit: false }])
+          { type: 'usage', inputTokens: 1100, outputTokens: 100, cacheHit: true }
+        ]
+      },
+      {
+        chunks: [
+          { type: 'token', text: 'answer ' },
+          { type: 'usage', inputTokens: 1100, outputTokens: 100, cacheHit: false }
         ]
       }
     ]);

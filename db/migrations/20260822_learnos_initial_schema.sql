@@ -10,7 +10,10 @@
 -- Parity-checked against prisma/schema.prisma via introspection diff in CI.
 -- ============================================================================
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+DO $$ BEGIN
+  CREATE EXTENSION IF NOT EXISTS pgcrypto;
+EXCEPTION WHEN duplicate_object OR SQLSTATE '23505' THEN NULL; END $$;
+
 
 -- ---------------------------------------------------------------------------
 -- Enums

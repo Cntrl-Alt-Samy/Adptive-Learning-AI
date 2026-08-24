@@ -15,6 +15,13 @@ export default defineConfig({
         statements: 85,
         branches: 85
       }
-    }
+    },
+    // Integration tests share a single Postgres container and some specs reset
+    // the schema (DROP CASCADE). Run them sequentially to avoid collisions.
+    sequence: {
+      concurrent: false
+    },
+    // Serialize test FILES too — specs share one database and reset its schema.
+    fileParallelism: false
   }
 });

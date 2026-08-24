@@ -44,10 +44,14 @@ suite('rls-truth-table.spec — S0-T2 gate', () => {
     await adminClient.query(`
       DROP SCHEMA public CASCADE;
       CREATE SCHEMA public;
-      GRANT ALL ON SCHEMA public TO postgres;
+      GRANT ALL ON SCHEMA public TO current_user;
       GRANT ALL ON SCHEMA public TO public;
     `);
     await adminClient.query(readFileSync(MIGRATION, 'utf8'));
+    // Seed the shared FK target used by every seeded session below.
+    await adminClient.query(
+      `INSERT INTO subjects (id, title, category) VALUES ('s1', 'Truth Table Subject', 'test') ON CONFLICT (id) DO NOTHING`
+    );
     // Let the test connection assume the NOLOGIN app roles.
     await adminClient.query(`GRANT app_learner, app_instructor, app_admin TO current_user`);
 
@@ -150,9 +154,11 @@ suite('rls-truth-table.spec — S0-T2 gate', () => {
         if (ownCount !== 1) failures.push(`${p.label}/own expected 1 got ${ownCount}`);
 
         // COHORT scope — educators raw iff adult or consented minor (B-03);
-        // learners never see another user's rows.
+        // learners never see another user's rows. Self rows are always visible
+        // (same query as the OWN assertion above must stay consistent).
         const cohortCount = await visibleTurnsOwnedBy(probe, target.id);
-        const expectedCohort = !isEducator || probe.id === target.id ? 0 : profile.educatorVisible ? 1 : 0;
+        const expectedCohort =
+          probe.id === target.id ? 1 : !isEducator ? 0 : profile.educatorVisible ? 1 : 0;
         if (cohortCount !== expectedCohort) {
           failures.push(
             `${p.label}/cohort:${profile.label} expected ${expectedCohort} got ${cohortCount}` +

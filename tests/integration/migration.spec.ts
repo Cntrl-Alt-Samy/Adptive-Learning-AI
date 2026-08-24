@@ -65,10 +65,12 @@ suite('migration.spec — S0-T1 gate', () => {
     client = new pg.Client({ connectionString: TEST_URL });
     await client.connect();
     // Reset to a fresh database state for deterministic application.
+    // Note: use current_user instead of hardcoded 'postgres' so this works
+    // against both Supabase (postgres role) and the local Docker image (learnos).
     await client.query(`
       DROP SCHEMA public CASCADE;
       CREATE SCHEMA public;
-      GRANT ALL ON SCHEMA public TO postgres;
+      GRANT ALL ON SCHEMA public TO current_user;
       GRANT ALL ON SCHEMA public TO public;
     `);
   }, 30_000);
@@ -130,7 +132,15 @@ suite('migration.spec — S0-T1 gate', () => {
   });
 
   it('two-phase commit idempotency: UNIQUE(session_id, step_number) rejects duplicates', async () => {
-    await client.query(`INSERT INTO sessions (subject_id,target_duration_min) SELECT 's1', 45`);
+    // sessions.user_id is NOT NULL — seed a minimal tenant + user first.
+    const tenantRes = await client.query(`INSERT INTO tenants (name) VALUES ('MigTest') RETURNING id`);
+    const userRes = await client.query(
+      `INSERT INTO users (tenant_id, clerk_id, email) VALUES ($1, 'mig-clerk', 'mig@test.local') RETURNING id`,
+      [tenantRes.rows[0].id]
+    );
+    await client.query(`INSERT INTO sessions (user_id, subject_id, target_duration_min) VALUES ($1, 's1', 45)`, [
+      userRes.rows[0].id
+    ]);
     const sessionId = (await client.query(`SELECT id FROM sessions LIMIT 1`)).rows[0].id as string;
     await client.query(
       `INSERT INTO session_checkpoints (session_id,step_number,active_mode,state_payload) VALUES ($1,1,'TUTOR','{}'::jsonb)`,
