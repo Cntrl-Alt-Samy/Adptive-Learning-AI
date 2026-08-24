@@ -18,7 +18,9 @@
     "pinecone:init": "tsx scripts/init-pinecone.ts",
     "pinecone:seed": "tsx scripts/seed-pinecone.ts",
     "db:migrate": "tsx scripts/db-migrate.ts",
-    "evals:golden": "tsx scripts/run-golden-evals.ts"
+    "evals:golden": "tsx scripts/run-golden-evals.ts",
+    "migrations:verify": "tsx scripts/check-migrations.ts",
+    "smoke:ga": "tsx scripts/ga-smoke.ts"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^6.1.2",
