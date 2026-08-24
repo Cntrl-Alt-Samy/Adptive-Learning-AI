@@ -60,4 +60,26 @@ Key entry points:
 
 ---
 
+## Learner Web App (Next.js — Sprint 8a)
+
+The macOS-styled learner experience lives in [`app/`](./app) as a single
+Next.js 15 (App Router) deployment that imports the platform engines in
+[`src/`](./src) directly — no shim between UI and pedagogy.
+
+```bash
+npm run dev         # http://localhost:3000 (redirects to /today)
+npm run build       # production build + typecheck
+npm run lint        # eslint flat config (token + hook gates)
+npm run test:web    # vitest web suites (tokens, mac kit, a11y, consent)
+```
+
+Routes: `/onboarding/**` (consent gate → rapid/conversational intake → CAT
+calibration) · `/today` (streaming delivery → check-in → Socratic → practice →
+summary) · `/plan` · `/settings` · `/design` (dev-only component gallery).
+
+Offline demo mode: set `LEARNOS_MOCK_TRANSPORT=1` to stream canned
+contract-valid turns without a model backend.
+
+---
+
 *Framework: AI-Native Startup Product Development Framework*

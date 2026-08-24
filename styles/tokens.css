@@ -1,0 +1,89 @@
+/*
+ * S8A-T2 — macOS design tokens (Sprint 8a §4, normative).
+ * Source of truth for every color/material/type/geometry decision.
+ * No component may hardcode a hex — lint-enforced outside this file.
+ */
+
+:root {
+  /* ---- 4.1 System colors (light) ---- */
+  --sys-blue: #007aff;
+  --sys-green: #34c759;
+  --sys-orange: #ff9500;
+  --sys-red: #ff3b30;
+  --sys-purple: #af52de;
+  --sys-teal: #30b0c7;
+  --sys-indigo: #5856d6;
+  --sys-mint: #00c7be;
+  --sys-yellow: #ffcc00;
+  --sys-gray: #8e8e93;
+  --sys-gray2: #aeaeb2;
+  --sys-gray3: #c7c7cc;
+  --sys-gray4: #d1d1d6;
+  --sys-gray5: #e5e5ea;
+  --sys-gray6: #f2f2f7;
+
+  /* Semantic aliases (light) */
+  --label: rgba(0, 0, 0, 0.85);
+  --secondary-label: rgba(0, 0, 0, 0.55);
+  --tertiary-label: rgba(0, 0, 0, 0.3);
+  --separator: rgba(0, 0, 0, 0.09);
+  --window: #ffffff;
+  --text-background: #ffffff;
+
+  /* ---- 4.2 Materials (light bases) ---- */
+  --mat-sidebar: rgba(246, 246, 246, 0.72);
+  --mat-sidebar-fallback: #f2f2f7;
+  --mat-hud: rgba(242, 242, 247, 0.65);
+  --mat-hud-fallback: #f2f2f7;
+  --mat-chrome: rgba(255, 255, 255, 0.72);
+  --mat-chrome-fallback: #ffffff;
+  --popover-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+
+  /* ---- 4.3 Typography stacks ---- */
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', system-ui,
+    sans-serif;
+  --font-mono-stack: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ---- 4.4 Geometry & motion ---- */
+  --radius-control: 6px;
+  --radius-card: 10px;
+  --radius-sheet: 12px;
+  --control-height: 28px;
+  --control-height-prominent: 36px;
+  --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --dur-micro: 150ms;
+  --dur-popover: 250ms;
+  --dur-step: 400ms;
+}
+
+[data-theme='dark'] {
+  --sys-blue: #0a84ff;
+  --sys-green: #30d158;
+  --sys-orange: #ff9f0a;
+  --sys-red: #ff453a;
+  --sys-purple: #bf5af2;
+  --sys-teal: #40c8e0;
+  --sys-indigo: #5e5ce6;
+  --sys-mint: #66d4cf;
+  --sys-yellow: #ffd60a;
+  --sys-gray: #98989d;
+  --sys-gray2: #636366;
+  --sys-gray3: #48484a;
+  --sys-gray4: #3a3a3c;
+  --sys-gray5: #2c2c2e;
+  --sys-gray6: #1c1c1e;
+
+  --label: rgba(255, 255, 255, 0.85);
+  --secondary-label: rgba(255, 255, 255, 0.55);
+  --tertiary-label: rgba(255, 255, 255, 0.3);
+  --separator: rgba(255, 255, 255, 0.12);
+  --window: #1e1e1e;
+  --text-background: #28282a;
+
+  --mat-sidebar: rgba(40, 40, 42, 0.72);
+  --mat-sidebar-fallback: #2c2c2e;
+  --mat-hud: rgba(44, 44, 46, 0.65);
+  --mat-hud-fallback: #2c2c2e;
+  --mat-chrome: rgba(30, 30, 30, 0.78);
+  --mat-chrome-fallback: #1e1e1e;
+}

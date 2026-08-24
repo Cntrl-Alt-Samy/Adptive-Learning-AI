@@ -1,0 +1,139 @@
+@import 'tailwindcss';
+@import '../styles/tokens.css';
+
+/*
+ * S8A-T2 — Tailwind v4 theme mapping over the §4 tokens.
+ * `inline` keeps var() references so utilities flip with [data-theme].
+ */
+@theme inline {
+  --color-sys-blue: var(--sys-blue);
+  --color-sys-green: var(--sys-green);
+  --color-sys-orange: var(--sys-orange);
+  --color-sys-red: var(--sys-red);
+  --color-sys-purple: var(--sys-purple);
+  --color-sys-teal: var(--sys-teal);
+  --color-sys-indigo: var(--sys-indigo);
+  --color-sys-mint: var(--sys-mint);
+  --color-sys-yellow: var(--sys-yellow);
+  --color-gray: var(--sys-gray);
+  --color-gray2: var(--sys-gray2);
+  --color-gray3: var(--sys-gray3);
+  --color-gray4: var(--sys-gray4);
+  --color-gray5: var(--sys-gray5);
+  --color-gray6: var(--sys-gray6);
+
+  --color-label: var(--label);
+  --color-secondary-label: var(--secondary-label);
+  --color-tertiary-label: var(--tertiary-label);
+  --color-separator: var(--separator);
+  --color-window: var(--window);
+  --color-text-background: var(--text-background);
+
+  --font-ui: var(--font-ui);
+  --font-mono: var(--font-mono-stack);
+
+  --text-large-title: 26px;
+  --text-large-title--font-weight: 700;
+  --text-title-1: 22px;
+  --text-title-1--font-weight: 700;
+  --text-title-2: 17px;
+  --text-title-2--font-weight: 600;
+  --text-headline: 13px;
+  --text-headline--font-weight: 600;
+  --text-body: 13px;
+  --text-body--font-weight: 400;
+  --text-body--line-height: 1.45;
+  --text-chat-body: 15px;
+  --text-chat-body--font-weight: 400;
+  --text-callout: 12px;
+  --text-callout--font-weight: 400;
+  --text-caption-1: 11px;
+  --text-caption-1--font-weight: 400;
+
+  --radius-control: var(--radius-control);
+  --radius-card: var(--radius-card);
+  --radius-sheet: var(--radius-sheet);
+
+  --shadow-popover: var(--popover-shadow);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--window);
+  color: var(--label);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Focus ring — 3px systemBlue @35% halo (§4.4). */
+.focus-halo:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--sys-blue) 35%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--sys-blue) 65%, transparent);
+}
+
+/* ---- Materials (NSVisualEffectView equivalents) ---- */
+.material-sidebar {
+  background: var(--mat-sidebar-fallback);
+}
+.material-hud {
+  background: var(--mat-hud-fallback);
+}
+.material-chrome {
+  background: var(--mat-chrome-fallback);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .material-sidebar {
+    background: var(--mat-sidebar);
+    backdrop-filter: blur(40px) saturate(180%);
+  }
+  .material-hud {
+    background: var(--mat-hud);
+    backdrop-filter: blur(30px) saturate(160%);
+  }
+  .material-chrome {
+    background: var(--mat-chrome);
+    backdrop-filter: blur(20px);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .material-sidebar {
+    background: var(--mat-sidebar-fallback);
+    backdrop-filter: none;
+  }
+  .material-hud {
+    background: var(--mat-hud-fallback);
+    backdrop-filter: none;
+  }
+  .material-chrome {
+    background: var(--mat-chrome-fallback);
+    backdrop-filter: none;
+  }
+}
+
+/* Motion — reduced-motion disables all non-opacity animation. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.sheet-pop {
+  transition:
+    transform var(--dur-popover) var(--ease-default),
+    opacity var(--dur-popover) var(--ease-default);
+}

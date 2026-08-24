@@ -1,8 +1,22 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  esbuild: {
+    jsx: 'automatic'
+  },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('.', import.meta.url))
+    },
+    // Engine modules use NodeNext-style `.js` specifiers → map to TS sources.
+    extensionAlias: {
+      '.js': ['.ts', '.tsx', '.js'],
+      '.mjs': ['.mts', '.mjs']
+    }
+  },
   test: {
-    include: ['tests/**/*.spec.ts'],
+    include: ['tests/**/*.spec.ts', 'tests/**/*.spec.tsx'],
     testTimeout: 30_000,
     hookTimeout: 30_000,
     coverage: {

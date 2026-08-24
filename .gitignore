@@ -5,6 +5,14 @@ reports/
 *.log
 .DS_Store
 
+# Next.js (Sprint 8a)
+.next/
+*.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+
 # Secrets — never commit
 .env
 .env.local
