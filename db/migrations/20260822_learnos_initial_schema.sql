@@ -274,3 +274,10 @@ REVOKE INSERT, UPDATE, DELETE ON tenants FROM app_learner, app_instructor;
 GRANT INSERT, UPDATE, DELETE ON tenants TO app_admin;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_admin;
+
+-- ---------------------------------------------------------------------------
+-- S4-T8 (B-02) — decay re-entry guard. Rows decayed within the last 24h are
+-- skipped by the rolling worker, making chunk replay structurally idempotent.
+-- ---------------------------------------------------------------------------
+ALTER TABLE learning_dna ADD COLUMN IF NOT EXISTS last_decayed_at timestamptz;
+CREATE INDEX IF NOT EXISTS learning_dna_last_decayed_idx ON learning_dna(last_decayed_at);

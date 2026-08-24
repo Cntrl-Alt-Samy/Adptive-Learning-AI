@@ -22,7 +22,7 @@ const EXPECTED_TABLES: Record<string, string[]> = {
   subjects: ['id', 'title', 'category', 'exam_board', 'total_concepts', 'created_at'],
   concept_nodes: ['id', 'subject_id', 'title', 'difficulty_level', 'canonical_definitions'],
   concept_prerequisites: ['concept_id', 'prerequisite_id'],
-  learning_dna: ['id', 'user_id', 'concept_id', 'mastery_score', 'status', 'decay_rate', 'last_reviewed_at'],
+  learning_dna: ['id', 'user_id', 'concept_id', 'mastery_score', 'status', 'decay_rate', 'last_reviewed_at', 'last_decayed_at'],
   sessions: [
     'id', 'user_id', 'subject_id', 'target_duration_min', 'calibrated_level',
     'pre_knowledge_score', 'post_knowledge_score', 'status', 'started_at', 'completed_at'

@@ -145,6 +145,7 @@ model LearningDNA {
   status         MasteryStatus @default(NEEDS_WORK)
   decayRate      Float         @default(0.05) @map("decay_rate")
   lastReviewedAt DateTime      @default(now()) @map("last_reviewed_at") @db.Timestamptz
+  lastDecayedAt  DateTime?     @map("last_decayed_at") @db.Timestamptz
 
   user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   concept ConceptNode @relation(fields: [conceptId], references: [id], onDelete: Cascade)
