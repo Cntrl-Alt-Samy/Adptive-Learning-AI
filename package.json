@@ -17,7 +17,8 @@
     "ingest": "tsx scripts/ingest-curriculum.ts",
     "pinecone:init": "tsx scripts/init-pinecone.ts",
     "pinecone:seed": "tsx scripts/seed-pinecone.ts",
-    "db:migrate": "tsx scripts/db-migrate.ts"
+    "db:migrate": "tsx scripts/db-migrate.ts",
+    "evals:golden": "tsx scripts/run-golden-evals.ts"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^6.1.2",
