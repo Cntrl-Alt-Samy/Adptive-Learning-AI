@@ -18,6 +18,6 @@
     "sourceMap": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts", "workers/**/*.ts"],
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts", "workers/**/*.ts", "api/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
