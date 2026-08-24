@@ -1,0 +1,119 @@
+import 'dotenv/config';
+import http from 'node:http';
+import { randomUUID } from 'node:crypto';
+import { loadEnv } from '../src/config/env.js';
+import { runTurn } from '../src/api/sse/turn-route.js';
+import { createModelTransport } from '../src/ai/transport.js';
+import { CircuitBreaker } from '../src/ai/breaker.js';
+import { InMemoryCheckpointStore } from '../src/state/checkpoint-store.js';
+import { InMemoryAuditSink, type AiExecutionAuditRow } from '../src/ai/cost-audit.js';
+import type { SanitizerFlag } from '../src/security/sanitizer.js';
+
+const env = loadEnv();
+const PORT = 8787;
+const SESSION = randomUUID();
+const store = new InMemoryCheckpointStore();
+const audit = new InMemoryAuditSink();
+const freeModel = process.env.LEARNOS_TUTOR_MODEL ?? 'x-preview-f-free';
+
+const sharedTransport = createModelTransport();
+const deps = {
+  transports: { openai: sharedTransport, anthropic: sharedTransport },
+  breaker: new CircuitBreaker({ failureThreshold: 3 }),
+  checkpointStore: store,
+  auditSink: audit,
+  requestTimeoutMs: 30_000,
+  routeOverrides: {
+    tierModels: {
+      1: { primary: { provider: 'openai' as const, model: freeModel } },
+      2: { primary: { provider: 'openai' as const, model: freeModel } },
+      3: { primary: { provider: 'openai' as const, model: freeModel } }
+    }
+  },
+  onSanitizerFlags: (flags: SanitizerFlag[]) => console.log('[sanitizer]', flags.join(','))
+};
+
+const HTML = `<!doctype html><html><head><meta charset=utf-8><title>LearnOS Demo</title><style>
+body{font-family:system-ui;background:#0d1117;color:#e6edf3;margin:0;display:flex;justify-content:center}
+main{width:min(760px,94vw);padding:24px}h1{font-size:20px}
+.badge{display:inline-block;padding:4px 10px;border-radius:12px;background:#1f6feb33;border:1px solid #1f6feb;font-size:13px;margin-left:8px}
+.badge.ok{background:#23863633;border-color:#238636}
+#chat{margin-top:16px;display:flex;flex-direction:column;gap:10px;min-height:50vh}
+.msg{max-width:85%;padding:10px 14px;border-radius:14px;white-space:pre-wrap;line-height:1.5}
+.user{align-self:flex-end;background:#1f6feb}.tutor{align-self:flex-start;background:#161b22;border:1px solid #30363d}
+.err{align-self:center;background:#da363333;border:1px solid #da3636;font-size:13px}
+form{display:flex;gap:8px;margin-top:12px}input{flex:1;padding:12px;border-radius:10px;border:1px solid #30363d;background:#0d1117;color:inherit}
+button{padding:12px 18px;border-radius:10px;border:0;background:#238636;color:#fff;cursor:pointer}
+</style></head><body><main>
+<h1>LearnOS <span class=badge id=step>step –</span><span class=badge id=mode>TUTOR · ${freeModel}</span></h1>
+<div id=chat></div>
+<form id=f><input id=i placeholder="Ask the tutor something…" autocomplete=off><button>Send</button></form>
+<script>
+const chat=document.getElementById('chat');
+function add(cls,t){const d=document.createElement('div');d.className='msg '+cls;if(t!==undefined)d.textContent=t;chat.appendChild(d);return d;}
+document.getElementById('f').onsubmit=async e=>{
+  e.preventDefault();const i=document.getElementById('i');const text=i.value.trim();if(!text)return;
+  i.value='';add('user',text);
+  const bubble=add('tutor','');let acc='';
+  try{
+    const res=await fetch('/api/turn',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text})});
+    const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
+    for(;;){const{done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});
+      let j;while((j=buf.indexOf('\\n\\n'))>=0){const frame=buf.slice(0,j);buf=buf.slice(j+2);
+        let ev=null,name='';for(const ln of frame.split('\\n')){if(ln.startsWith('data: '))ev=JSON.parse(ln.slice(6));if(ln.startsWith('event: '))name=ln.slice(7);}
+        if(!ev)continue;
+        if(ev.type==='token'){acc+=ev.text;bubble.textContent=acc;}
+        else if(ev.type==='checkpoint_confirmed'){const b=document.getElementById('step');b.textContent='✓ step '+ev.stepNumber+' committed';b.classList.add('ok');add('err','[state checkpoint committed server-side — step '+ev.stepNumber+(ev.replayed?' (replayed)':'')+']');}
+        else if(ev.type==='error'){add('err','⚠ '+ev.code+': '+ev.message);}
+      }}
+  }catch(err){add('err','⚠ stream failed: '+err.message)}
+};
+</script></main></body></html>`;
+
+const server = http.createServer(async (req, res) => {
+  if (req.method === 'GET' && req.url === '/') {
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    res.end(HTML);
+    return;
+  }
+  if (req.method === 'POST' && req.url === '/api/turn') {
+    let body = '';
+    for await (const c of req) body += c;
+    let parsed: any = {};
+    try { parsed = JSON.parse(body); } catch { /* keep defaults */ }
+
+    res.writeHead(200, {
+      'content-type': 'text/event-stream',
+      'cache-control': 'no-cache',
+      connection: 'keep-alive'
+    });
+    const t0 = Date.now();
+    try {
+      for await (const event of runTurn(
+        {
+          sessionId: SESSION,
+          userId: 'demo-user',
+          mode: parsed.mode ?? 'TUTOR',
+          step: parsed.step ?? 4,
+          userMessage: String(parsed.text ?? '')
+        },
+        deps
+      )) {
+        res.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
+      }
+    } catch (err) {
+      res.write(`event: error\ndata: ${JSON.stringify({ v: 1, type: 'error', code: 'FATAL', message: (err as Error).message, retryable: false })}\n\n`);
+    }
+    const rows: AiExecutionAuditRow[] = await audit.listAudits(SESSION);
+    const last = rows.at(-1);
+    console.log(`[turn] ${(Date.now() - t0)}ms model=${last?.modelUsed ?? '?'} in=${last?.inputTokens ?? '?'} out=${last?.outputTokens ?? '?'} cost£=${last?.costGbp ?? '?'}`);
+    res.end();
+    return;
+  }
+  res.writeHead(404).end();
+});
+
+server.listen(PORT, () => {
+  console.log(`\n  LearnOS demo  →  http://localhost:${PORT}\n  session=${SESSION}`);
+  console.log(`  pipeline: sanitize → route(Tier→${freeModel}) → stream → checkpoint commit → SSE\n`);
+});

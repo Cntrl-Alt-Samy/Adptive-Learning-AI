@@ -1,4 +1,4 @@
-import { resolveRoute, type AiMode } from '../../ai/router.js';
+import { resolveRoute, type AiMode, type RouterOptions } from '../../ai/router.js';
 import { STATIC_PROMPT_PREFIX, buildPrefixMessages, estimateTokens } from '../../ai/prompt-prefix.js';
 import type { ModelTransport, TransportChunk } from '../../ai/transport.js';
 import { CircuitBreaker, TimeoutError } from '../../ai/breaker.js';
@@ -41,6 +41,8 @@ export interface TurnDeps {
   auditSink: AuditSink;
   /** ms before an in-flight stream counts as a breaker failure (>4s policy). */
   requestTimeoutMs?: number;
+  /** Env-driven tier model overrides (e.g. free-model gateways for local dev). */
+  routeOverrides?: RouterOptions;
   now?: () => number;
   onSanitizerFlags?: (flags: SanitizerFlag[], sessionId: string) => void;
 }
@@ -103,7 +105,7 @@ export async function* runTurn(req: TurnRequest, deps: TurnDeps): AsyncGenerator
   if (flags.length > 0) deps.onSanitizerFlags?.(flags, req.sessionId);
 
   // ② Route.
-  const route = resolveRoute(req.mode, req.step);
+  const route = resolveRoute(req.mode, req.step, deps.routeOverrides);
   const startedAt = (deps.now ?? Date.now)();
 
   const attempt = async function* (
