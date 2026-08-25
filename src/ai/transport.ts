@@ -19,6 +19,8 @@ export interface TransportRequest {
   model: string;
   /** Immutable ~1,100-token static prefix (S1-T4) — first system message. */
   systemPrefix: string;
+  /** Dynamic per-turn context (learner profile, curriculum RAG, DNA). Appended to system prefix. */
+  dynamicContext?: string | null;
   messages: Array<{ role: 'user' | 'assistant'; content: string }>;
   temperature?: number;
   maxTokens?: number;
@@ -136,7 +138,7 @@ export class OpenAiChatTransport implements ModelTransport {
         temperature: req.temperature ?? 0.7,
         max_tokens: req.maxTokens ?? 1_200,
         messages: [
-          { role: 'system', content: req.systemPrefix },
+          { role: 'system', content: req.dynamicContext !== undefined && req.dynamicContext !== null && req.dynamicContext.length > 0 ? `${req.systemPrefix}\n\n${req.dynamicContext}` : req.systemPrefix },
           ...req.messages.map((m) => ({ role: m.role, content: m.content }))
         ]
       })
@@ -200,9 +202,9 @@ export class AnthropicMessagesTransport implements ModelTransport {
         stream: true,
         max_tokens: req.maxTokens ?? 1_200,
         temperature: req.temperature ?? 0.7,
-        // Static prefix carries the ephemeral cache_control breakpoint (S1-T4).
+        // Static prefix + dynamic context in the system field (S1-T4).
         system: [
-          { type: 'text', text: req.systemPrefix, cache_control: { type: 'ephemeral' } }
+          { type: 'text', text: req.dynamicContext !== undefined && req.dynamicContext !== null && req.dynamicContext.length > 0 ? `${req.systemPrefix}\n\n${req.dynamicContext}` : req.systemPrefix, cache_control: { type: 'ephemeral' } }
         ],
         messages: req.messages.map((m) => ({ role: m.role, content: m.content }))
       })

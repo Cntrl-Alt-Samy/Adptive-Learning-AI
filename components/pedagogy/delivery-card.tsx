@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChatBubble, KaTeXBlock, ProgressBar, PushButton } from '@/components/mac';
 import { useTutorStream } from '@/hooks/use-tutor-stream';
+import { useSession } from '@/hooks/session-store';
 import { DELIVERY_PARTS, DeliveryGate } from '@/src/pedagogy/delivery-gate.js';
 import type { DeliveryPart } from '@/src/pedagogy/delivery-gate.js';
 
@@ -50,13 +51,30 @@ export function DeliveryCard({ conceptId, title, sessionId, onComplete }: Delive
   const [confusedFlash, setConfusedFlash] = useState(false);
   const [deliveredCount, setDeliveredCount] = useState(0);
   const stream = useTutorStream(sessionId);
+  const session = useSession();
   const startedRef = useRef(false);
 
   // All render-time reads come from state; refs are only touched in effects/handlers.
   const currentPart: DeliveryPart = DELIVERY_PARTS[snapshot.partIndex] ?? 'BIG_PICTURE';
 
+  const learnerContext = useMemo(
+    () => ({
+      persona: session.persona ?? undefined,
+      dna: {
+        mastery: session.conceptProgress.map((c) => ({
+          conceptId: c.conceptId,
+          masteryScore: c.masteryScore,
+          status: (c.masteryScore >= 80 ? 'SOLID' : c.masteryScore >= 50 ? 'PARTIAL' : 'NEEDS_WORK') as 'SOLID' | 'PARTIAL' | 'NEEDS_WORK'
+        })),
+        dueReviews: []
+      },
+      conceptId
+    }),
+    [session.persona, session.conceptProgress, conceptId]
+  );
+
   async function streamPart(): Promise<void> {
-    await stream.send(`Concept "${title}" (${conceptId}). ${PART_PROMPT[currentPart]}`, { mode: 'TUTOR', step: 4 });
+    await stream.send(`Concept "${title}" (${conceptId}). ${PART_PROMPT[currentPart]}`, { mode: 'TUTOR', step: 4, learnerContext });
     gate.markDelivered(gate.currentPart, { grounded: true });
     setDeliveredCount((c) => c + 1);
     setSnapshot(gate.snapshot());

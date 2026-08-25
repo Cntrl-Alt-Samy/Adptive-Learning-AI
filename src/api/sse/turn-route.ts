@@ -1,5 +1,6 @@
 import { resolveRoute, type AiMode, type RouterOptions } from '../../ai/router.js';
 import { STATIC_PROMPT_PREFIX, buildPrefixMessages, estimateTokens } from '../../ai/prompt-prefix.js';
+import { buildDynamicContext, type LearnerPersona, type LearnerDnaContext } from '../../ai/learner-context.js';
 import type { ModelTransport, TransportChunk } from '../../ai/transport.js';
 import { CircuitBreaker, TimeoutError } from '../../ai/breaker.js';
 import { sanitize, type SanitizerFlag } from '../../security/sanitizer.js';
@@ -32,6 +33,12 @@ export interface TurnRequest {
   step: number;
   userMessage: string;
   history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+  /** Dynamic learner context for personalized tutoring. */
+  learnerContext?: {
+    persona?: LearnerPersona;
+    dna?: LearnerDnaContext;
+    curriculumChunks?: string;
+  };
 }
 
 export interface TurnDeps {
@@ -120,6 +127,39 @@ export async function* runTurn(req: TurnRequest, deps: TurnDeps): AsyncGenerator
       candidate.provider === 'anthropic' ? deps.transports.anthropic : deps.transports.openai;
 
     const prefix = buildPrefixMessages(candidate.provider === 'anthropic' ? 'anthropic' : 'openai');
+
+    // Build dynamic context (learner profile + curriculum RAG + DNA).
+    const contextParts: string[] = [];
+    if (req.learnerContext?.persona !== undefined) {
+      contextParts.push(
+        [
+          'LEARNER PROFILE',
+          `Subject: ${req.learnerContext.persona.subjectTitle} (${req.learnerContext.persona.subjectId})`,
+          `Level: ${req.learnerContext.persona.selfLevel}`,
+          `Goal: ${req.learnerContext.persona.goal}`,
+          `Modality: ${req.learnerContext.persona.modality}`,
+          `Session budget: ${req.learnerContext.persona.timeMinutes} min`
+        ].join('\n')
+      );
+    }
+    if (req.learnerContext?.curriculumChunks !== undefined && req.learnerContext.curriculumChunks.length > 0) {
+      contextParts.push(req.learnerContext.curriculumChunks);
+    }
+    if (req.learnerContext?.dna !== undefined && req.learnerContext.dna.mastery.length > 0) {
+      const matrix = req.learnerContext.dna.mastery
+        .map((m) => `  ${m.conceptId}: ${Math.round(m.masteryScore * 100)}% (${m.status})`)
+        .join('\n');
+      const due =
+        req.learnerContext.dna.dueReviews.length > 0
+          ? req.learnerContext.dna.dueReviews
+              .slice(0, 10)
+              .map((d) => `  ${d.conceptId} — due ${new Date(d.dueAtMs).toISOString().slice(0, 16)}`)
+              .join('\n')
+          : '  (none due)';
+      contextParts.push(`LEARNING DNA\nMastery matrix:\n${matrix}\nDue for spaced review:\n${due}`);
+    }
+    const dynamicContext = contextParts.length > 0 ? contextParts.join('\n\n') : null;
+
     const messages = [
       ...(req.history ?? []),
       { role: 'user' as const, content: `[MODE: ${req.mode} | STEP: ${req.step}] ${clean}` }
@@ -138,6 +178,7 @@ export async function* runTurn(req: TurnRequest, deps: TurnDeps): AsyncGenerator
           provider: candidate.provider,
           model: candidate.model,
           systemPrefix: STATIC_PROMPT_PREFIX,
+          dynamicContext,
           messages,
           signal: undefined
         })

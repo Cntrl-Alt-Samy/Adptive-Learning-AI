@@ -20,17 +20,38 @@ export interface ChatMessage {
   content: string;
 }
 
+/** Learner context sent with each turn for personalized tutoring. */
+export interface LearnerTurnContext {
+  persona?: {
+    subjectId: string;
+    subjectTitle: string;
+    selfLevel: 'beginner' | 'some_exposure' | 'intermediate' | 'advanced';
+    goal: string;
+    timeMinutes: number;
+    modality: 'stepwise' | 'examples' | 'visual' | 'hands_on';
+  };
+  dna?: {
+    mastery: Array<{ conceptId: string; masteryScore: number; status: 'SOLID' | 'PARTIAL' | 'NEEDS_WORK' }>;
+    dueReviews: Array<{ conceptId: string; dueAtMs: number }>;
+  };
+  conceptId?: string;
+}
+
 interface TurnRequestPayload {
   sessionId: string;
   mode: AiModeName;
   step: number;
   text: string;
   history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+  persona?: LearnerTurnContext['persona'];
+  dna?: LearnerTurnContext['dna'];
+  conceptId?: string;
 }
 
 export interface SendOptions {
   mode: AiModeName;
   step: number;
+  learnerContext?: LearnerTurnContext;
 }
 
 export interface TutorStream {
@@ -131,13 +152,20 @@ export function useTutorStream(sessionId: string): TutorStream {
       const controller = new AbortController();
       const backoff = new BackoffSchedule();
 
+      const payload: TurnRequestPayload = {
+        ...req,
+        sessionId,
+        text,
+        history: historyRef.current.slice(0, -1).slice(-12)
+      };
+      if (req.learnerContext?.persona !== undefined) payload.persona = req.learnerContext.persona;
+      if (req.learnerContext?.dna !== undefined) payload.dna = req.learnerContext.dna;
+      if (req.learnerContext?.conceptId !== undefined) payload.conceptId = req.learnerContext.conceptId;
+
       try {
         for (;;) {
           try {
-            await runStream(
-              { ...req, sessionId, text, history: historyRef.current.slice(0, -1).slice(-12) },
-              controller.signal
-            );
+            await runStream(payload, controller.signal);
             backoff.reset();
             break;
           } catch (err) {

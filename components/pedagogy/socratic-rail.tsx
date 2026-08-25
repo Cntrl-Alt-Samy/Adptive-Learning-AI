@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { ChatBubble, KaTeXBlock, PushButton } from '@/components/mac';
 import { useTutorStream } from '@/hooks/use-tutor-stream';
+import { useSession } from '@/hooks/session-store';
 import { SOCRATIC_STAGES, SocraticLoop } from '@/src/pedagogy/socratic.js';
 import type { SocraticVerdict } from '@/src/pedagogy/socratic.js';
 
@@ -34,12 +35,30 @@ export function SocraticRail({ sessionId, conceptId, onDone }: SocraticRailProps
   const [awaitingVerdict, setAwaitingVerdict] = useState(false);
   const [draft, setDraft] = useState('');
   const stream = useTutorStream(sessionId);
+  const session = useSession();
+
+  const learnerContext = useMemo(
+    () => ({
+      persona: session.persona ?? undefined,
+      dna: {
+        mastery: session.conceptProgress.map((c) => ({
+          conceptId: c.conceptId,
+          masteryScore: c.masteryScore,
+          status: (c.masteryScore >= 80 ? 'SOLID' : c.masteryScore >= 50 ? 'PARTIAL' : 'NEEDS_WORK') as 'SOLID' | 'PARTIAL' | 'NEEDS_WORK'
+        })),
+        dueReviews: []
+      },
+      conceptId
+    }),
+    [session.persona, session.conceptProgress, conceptId]
+  );
 
   async function askStage(stage: string | undefined): Promise<void> {
     if (stage === undefined) return;
     await stream.send(`Concept ${conceptId}, Socratic stage ${stage}: ${STAGE_QUESTION[stage] ?? ''}`, {
       mode: 'SOCRATIC_COACH',
-      step: 5
+      step: 5,
+      learnerContext
     });
     setAwaitingVerdict(true);
   }
