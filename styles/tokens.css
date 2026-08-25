@@ -49,6 +49,12 @@
     'Segoe UI', system-ui, sans-serif;
   --font-mono-stack: ui-monospace, 'SF Mono', Menlo, monospace;
 
+  /* ---- Brand / third-party tokens ---- */
+  --google-blue: #4285F4;
+  --google-green: #34A853;
+  --google-yellow: #FBBC05;
+  --google-red: #EA4335;
+
   /* ---- Geometry & motion — iOS continuous-feel ---- */
   --radius-control: 12px;
   --radius-card: 16px;
