@@ -1,11 +1,11 @@
 /*
- * S8A-T2 — macOS design tokens (Sprint 8a §4, normative).
+ * S8B polish — iOS design tokens (HIG-aligned, iteration on Sprint 8a §4).
  * Source of truth for every color/material/type/geometry decision.
  * No component may hardcode a hex — lint-enforced outside this file.
  */
 
 :root {
-  /* ---- 4.1 System colors (light) ---- */
+  /* ---- System colors (light) — iOS palette ---- */
   --sys-blue: #007aff;
   --sys-green: #34c759;
   --sys-orange: #ff9500;
@@ -22,34 +22,39 @@
   --sys-gray5: #e5e5ea;
   --sys-gray6: #f2f2f7;
 
-  /* Semantic aliases (light) */
-  --label: rgba(0, 0, 0, 0.85);
-  --secondary-label: rgba(0, 0, 0, 0.55);
+  /* Semantic aliases (light)
+   * window = grouped canvas · text-background = inset grouped card */
+  --label: rgba(0, 0, 0, 0.9);
+  --secondary-label: rgba(0, 0, 0, 0.6);
   --tertiary-label: rgba(0, 0, 0, 0.3);
-  --separator: rgba(0, 0, 0, 0.09);
-  --window: #ffffff;
+  --separator: rgba(60, 60, 67, 0.12);
+  --window: #f2f2f7;
   --text-background: #ffffff;
 
-  /* ---- 4.2 Materials (light bases) ---- */
-  --mat-sidebar: rgba(246, 246, 246, 0.72);
-  --mat-sidebar-fallback: #f2f2f7;
-  --mat-hud: rgba(242, 242, 247, 0.65);
-  --mat-hud-fallback: #f2f2f7;
-  --mat-chrome: rgba(255, 255, 255, 0.72);
-  --mat-chrome-fallback: #ffffff;
-  --popover-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+  /* ---- Materials (light bases) ---- */
+  --mat-sidebar: rgba(246, 246, 246, 0.78);
+  --mat-sidebar-fallback: rgba(246, 246, 246, 0.96);
+  --mat-hud: rgba(242, 242, 247, 0.72);
+  --mat-hud-fallback: #ececf1;
+  --mat-chrome: rgba(242, 242, 247, 0.82);
+  --mat-chrome-fallback: rgba(242, 242, 247, 0.97);
+  --popover-shadow: 0 16px 48px rgba(0, 0, 0, 0.22);
 
-  /* ---- 4.3 Typography stacks ---- */
-  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', system-ui,
-    sans-serif;
+  /* Inset-grouped card elevation */
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.05);
+  --thumb-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 3px 8px rgba(0, 0, 0, 0.08);
+
+  /* ---- Typography stacks ---- */
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI Variable',
+    'Segoe UI', system-ui, sans-serif;
   --font-mono-stack: ui-monospace, 'SF Mono', Menlo, monospace;
 
-  /* ---- 4.4 Geometry & motion ---- */
-  --radius-control: 6px;
-  --radius-card: 10px;
-  --radius-sheet: 12px;
-  --control-height: 28px;
-  --control-height-prominent: 36px;
+  /* ---- Geometry & motion — iOS continuous-feel ---- */
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-sheet: 20px;
+  --control-height: 40px;
+  --control-height-prominent: 50px;
   --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
   --dur-micro: 150ms;
   --dur-popover: 250ms;
@@ -73,17 +78,20 @@
   --sys-gray5: #2c2c2e;
   --sys-gray6: #1c1c1e;
 
-  --label: rgba(255, 255, 255, 0.85);
-  --secondary-label: rgba(255, 255, 255, 0.55);
-  --tertiary-label: rgba(255, 255, 255, 0.3);
-  --separator: rgba(255, 255, 255, 0.12);
-  --window: #1e1e1e;
-  --text-background: #28282a;
+  /* Dark grouped canvas is true black; cards are elevated gray */
+  --label: rgba(255, 255, 255, 0.92);
+  --secondary-label: rgba(255, 255, 255, 0.6);
+  --tertiary-label: rgba(255, 255, 255, 0.32);
+  --separator: rgba(84, 84, 88, 0.65);
+  --window: #000000;
+  --text-background: #1c1c1e;
 
-  --mat-sidebar: rgba(40, 40, 42, 0.72);
-  --mat-sidebar-fallback: #2c2c2e;
-  --mat-hud: rgba(44, 44, 46, 0.65);
-  --mat-hud-fallback: #2c2c2e;
-  --mat-chrome: rgba(30, 30, 30, 0.78);
-  --mat-chrome-fallback: #1e1e1e;
+  --mat-sidebar: rgba(28, 28, 30, 0.82);
+  --mat-sidebar-fallback: rgba(28, 28, 30, 0.98);
+  --mat-hud: rgba(28, 28, 30, 0.75);
+  --mat-hud-fallback: #1c1c1e;
+  --mat-chrome: rgba(18, 18, 20, 0.85);
+  --mat-chrome-fallback: rgba(18, 18, 20, 0.98);
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }

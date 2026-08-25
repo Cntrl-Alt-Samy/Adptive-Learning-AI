@@ -29,7 +29,7 @@ export function TextField({
 
   return (
     <div className="w-full">
-      <label htmlFor={id} className="mb-1 block text-headline text-secondary-label">
+      <label htmlFor={id} className="mb-1.5 block text-callout font-medium text-secondary-label">
         {label}
         {required && (
           <span aria-hidden className="ml-0.5 text-sys-red">
@@ -47,12 +47,12 @@ export function TextField({
         aria-describedby={error !== null ? `${id}-error` : undefined}
         onChange={(e) => onChange(e.target.value)}
         onBlur={() => setTouched(true)}
-        className={`focus-halo h-7 w-full rounded-control border bg-text-background px-2 text-body text-label placeholder:text-tertiary-label ${
-          error !== null ? 'border-sys-red' : 'border-separator'
+        className={`focus-halo h-11 w-full rounded-[12px] px-3.5 text-body text-label placeholder:text-tertiary-label bg-gray6 dark:bg-gray5 transition-colors ${
+          error !== null ? 'ring-1 ring-inset ring-sys-red' : ''
         }`}
       />
       {error !== null && (
-        <p id={`${id}-error`} role="alert" className="mt-1 text-caption-1 text-sys-red">
+        <p id={`${id}-error`} role="alert" className="mt-1.5 text-footnote text-sys-red">
           {error}
         </p>
       )}

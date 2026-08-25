@@ -33,7 +33,7 @@ export function Sheet({ open, locked = false, onClose, title, children }: SheetP
         if (!locked && e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="sheet-pop w-full max-w-md translate-y-0 rounded-sheet border border-separator bg-window p-5 shadow-popover">
+      <div className="sheet-pop w-full max-w-md translate-y-0 rounded-sheet bg-text-background p-6 shadow-popover">
         <h2 className="text-title-2">{title}</h2>
         <div className="mt-3">{children}</div>
       </div>

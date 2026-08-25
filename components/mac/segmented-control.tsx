@@ -12,7 +12,7 @@ interface SegmentedControlProps<T extends string> {
   ariaLabel: string;
 }
 
-/** §4.5 segmented control — radiogroup semantics for mode switches. */
+/** iOS segmented control — raised white thumb sliding over a gray track. */
 export function SegmentedControl<T extends string>({
   options,
   value,
@@ -23,7 +23,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className="inline-flex items-center gap-0.5 rounded-control bg-gray5 p-0.5"
+      className="inline-flex items-center gap-[2px] rounded-[10px] bg-gray5 p-[2px] dark:bg-gray4"
     >
       {options.map((opt) => {
         const selected = opt.value === value;
@@ -35,8 +35,8 @@ export function SegmentedControl<T extends string>({
             aria-checked={selected}
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(opt.value)}
-            className={`focus-halo rounded-control px-3 py-1 text-headline transition-colors duration-150 ${
-              selected ? 'bg-window text-label shadow-popover' : 'text-secondary-label'
+            className={`focus-halo rounded-[8px] px-3.5 py-1.5 text-[15px] leading-6 transition-all duration-150 ${
+              selected ? 'bg-text-background text-label shadow-[var(--thumb-shadow)]' : 'text-secondary-label hover:text-label'
             }`}
           >
             {opt.label}

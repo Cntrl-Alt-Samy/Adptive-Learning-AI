@@ -53,7 +53,7 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="material-chrome w-full max-w-md rounded-card border border-separator p-2 shadow-popover">
+      <div className="material-chrome w-full max-w-md rounded-sheet p-2.5 shadow-popover">
         <input
           ref={inputRef}
           value={query}
@@ -81,9 +81,9 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
               onClose();
             }
           }}
-          className="focus-halo h-8 w-full rounded-control border border-separator bg-text-background px-3 text-body text-label placeholder:text-tertiary-label"
+          className="focus-halo h-11 w-full rounded-[12px] bg-gray6 px-3.5 text-body text-label placeholder:text-tertiary-label dark:bg-gray5"
         />
-        <ul id="command-palette-list" role="listbox" aria-label="Commands" className="mt-1 max-h-72 overflow-auto">
+        <ul id="command-palette-list" role="listbox" aria-label="Commands" className="mt-1.5 max-h-72 overflow-auto p-1">
           {results.length === 0 && (
             <li className="px-3 py-4 text-center text-callout text-secondary-label">No results</li>
           )}
@@ -94,7 +94,7 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
                 tabIndex={-1}
                 onPointerMove={() => setActiveIndex(i)}
                 onClick={() => run(i)}
-                className={`w-full rounded-control px-3 py-1.5 text-left text-body ${
+                className={`w-full rounded-[10px] px-3 py-2.5 text-left text-body ${
                   i === activeIndex ? 'bg-sys-blue text-white' : 'text-label'
                 }`}
               >

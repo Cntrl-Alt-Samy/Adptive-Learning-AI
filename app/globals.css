@@ -32,22 +32,33 @@
   --font-ui: var(--font-ui);
   --font-mono: var(--font-mono-stack);
 
-  --text-large-title: 26px;
+  --text-large-title: 34px;
   --text-large-title--font-weight: 700;
-  --text-title-1: 22px;
+  --text-large-title--line-height: 1.12;
+  --text-large-title--letter-spacing: -0.022em;
+  --text-title-1: 28px;
   --text-title-1--font-weight: 700;
-  --text-title-2: 17px;
-  --text-title-2--font-weight: 600;
-  --text-headline: 13px;
+  --text-title-1--letter-spacing: -0.016em;
+  --text-title-2: 22px;
+  --text-title-2--font-weight: 700;
+  --text-title-2--letter-spacing: -0.012em;
+  --text-title-3: 20px;
+  --text-title-3--font-weight: 600;
+  --text-title-3--letter-spacing: -0.01em;
+  --text-headline: 17px;
   --text-headline--font-weight: 600;
-  --text-body: 13px;
+  --text-body: 17px;
   --text-body--font-weight: 400;
-  --text-body--line-height: 1.45;
-  --text-chat-body: 15px;
+  --text-body--line-height: 1.47;
+  --text-chat-body: 17px;
   --text-chat-body--font-weight: 400;
-  --text-callout: 12px;
+  --text-chat-body--line-height: 1.35;
+  --text-callout: 15px;
   --text-callout--font-weight: 400;
-  --text-caption-1: 11px;
+  --text-callout--line-height: 1.4;
+  --text-footnote: 13px;
+  --text-footnote--font-weight: 400;
+  --text-caption-1: 12px;
   --text-caption-1--font-weight: 400;
 
   --radius-control: var(--radius-control);
@@ -66,10 +77,15 @@ body {
   background-color: var(--window);
   color: var(--label);
   font-family: var(--font-ui);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 16px;
+  line-height: 1.47;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Inset-grouped card elevation — every rounded-card surface floats on the canvas. */
+.rounded-card {
+  box-shadow: var(--card-shadow);
 }
 
 /* Focus ring — 3px systemBlue @35% halo (§4.4). */

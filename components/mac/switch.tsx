@@ -6,7 +6,7 @@ interface ToggleSwitchProps {
   label: string;
 }
 
-/** §4.5 switch — macOS toggle. */
+/** iOS switch — 51×31 track, green when on. */
 export function ToggleSwitch({ checked, onChange, label }: ToggleSwitchProps) {
   return (
     <button
@@ -15,14 +15,14 @@ export function ToggleSwitch({ checked, onChange, label }: ToggleSwitchProps) {
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`focus-halo relative h-6 w-10 shrink-0 rounded-full transition-colors duration-150 ${
+      className={`focus-halo relative h-[31px] w-[51px] shrink-0 rounded-full transition-colors duration-200 ${
         checked ? 'bg-sys-green' : 'bg-gray4 dark:bg-gray3'
       }`}
     >
       <span
         aria-hidden
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-popover transition-all duration-150 ${
-          checked ? 'left-[18px]' : 'left-0.5'
+        className={`absolute top-[2px] h-[27px] w-[27px] rounded-full bg-white shadow-[var(--thumb-shadow)] transition-all duration-200 ease-out ${
+          checked ? 'left-[22px]' : 'left-[2px]'
         }`}
       />
     </button>

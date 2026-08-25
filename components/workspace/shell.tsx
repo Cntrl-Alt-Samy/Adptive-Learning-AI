@@ -53,41 +53,41 @@ export function Shell({
 
   return (
     <div className="flex h-dvh">
-      <div className="material-sidebar hidden w-60 shrink-0 border-r border-separator lg:block">
+      <div className="material-sidebar hidden w-[250px] shrink-0 border-r border-separator/60 lg:block">
         <Sidebar roadmap={roadmap} progress={progress} activeConceptId={activeConceptId} />
       </div>
 
       {drawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-label="Navigation drawer">
           <div
-            className="absolute inset-0 bg-black/25"
+            className="absolute inset-0 bg-black/25 backdrop-blur-[2px]"
             onPointerDown={() => setDrawerOpen(false)}
             aria-hidden
           />
-          <div className="material-sidebar absolute inset-y-0 left-0 w-64 border-r border-separator">
+          <div className="material-sidebar sheet-pop absolute inset-y-0 left-0 w-[300px] rounded-r-[24px] border-r border-separator/60 shadow-popover">
             <Sidebar roadmap={roadmap} progress={progress} activeConceptId={activeConceptId} />
           </div>
         </div>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="material-chrome flex h-11 shrink-0 items-center justify-between border-b border-separator px-3">
+        <header className="material-chrome flex h-[46px] shrink-0 items-center justify-between border-b border-separator/60 px-3">
           <div className="flex items-center gap-2">
             <PushButton variant="secondary" className="lg:hidden!" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}>
               ☰
             </PushButton>
-            <span className="text-title-2">LearnOS</span>
+            <span className="text-headline tracking-tight text-secondary-label">LearnOS</span>
           </div>
-          <PushButton variant="secondary" aria-keyshortcuts="Meta+K" onClick={() => setPaletteOpen(true)}>
+          <PushButton variant="secondary" aria-keyshortcuts="Meta+K" className="h-8 px-2.5 text-footnote" onClick={() => setPaletteOpen(true)}>
             ⌘K
           </PushButton>
         </header>
 
         <div className="flex min-h-0 flex-1">
-          <main id="main" className="min-w-0 flex-1 overflow-y-auto bg-window p-4">
+          <main id="main" className="min-w-0 flex-1 overflow-y-auto p-5 lg:p-7">
             {children}
           </main>
-          <div className="hidden w-64 shrink-0 border-l border-separator xl:block">
+          <div className="hidden w-[260px] shrink-0 border-l border-separator/60 xl:block">
             <InspectorHud
               mode={mode}
               confirmedStep={confirmedStep}
