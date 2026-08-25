@@ -6,6 +6,7 @@ import { PushButton } from '@/components/mac';
 import { StrikeSheet } from './strike-sheet';
 import { api } from '@/lib/api';
 import { useSession } from '@/hooks/session-store';
+import { useLedger } from '@/hooks/learner-store';
 import { StrikeBreaker } from '@/src/pedagogy/strike-breaker.js';
 import type { StrikeIntervention } from '@/src/pedagogy/strike-breaker.js';
 import type { PracticeQuestion } from '@/src/pedagogy/practice.js';
@@ -27,6 +28,7 @@ export interface PracticeFlowProps {
  */
 export function PracticeFlow({ conceptId, onDone }: PracticeFlowProps) {
   const { recordStrike } = useSession();
+  const ledger = useLedger();
   const [questions, setQuestions] = useState<PracticeQuestion[] | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
@@ -75,6 +77,7 @@ export function PracticeFlow({ conceptId, onDone }: PracticeFlowProps) {
   }
 
   const grade = (correct: boolean): void => {
+    ledger.recordPracticeAttempt(conceptId, correct);
     if (!correct) {
       const { intervention: next } = breakerRef.current.recordFailure(conceptId);
       recordStrike(conceptId);

@@ -91,3 +91,21 @@ Gating rules added: `/educator/**` unreachable for LEARNER (Alert + redirect per
 | Heatmap inference around suppressed cells | Suppression enforced server-side inside aggregation builders; client never receives raw sub-floor cells |
 | Polish scope creep (T7) | Timebox T7 to structural breakpoints + palette/material tuning; mobile parity beyond Doc 06 §12 stays in post-v1 backlog |
 | Two-week envelope compression | 8b starts only after the 8a exit review; if 8a slips, the 8b window shifts — do not interleave or pull trust scope forward |
+
+## 7. Status Snapshot
+
+**Updated: 2026-08-24 (implementation session).**
+
+| Task | Status | Notes |
+| :--- | :--- | :--- |
+| S8B-T1 Auth & role gating | ✅ Shipped (cookie fallback) | Clerk keys absent in env ⇒ risk-table cookie fallback shipped: HMAC-signed `learnos_session` (Node impl + Web-Crypto edge twin), `/signin` demo role picker, middleware RBAC, LEARNER→`/today?denied=educator` Alert modal. Clerk mounts later behind the same `AppSession` shape. |
+| S8B-T2 Matrix & review inbox | ✅ Shipped | `lib/progress-view.ts` (CAT prior heuristic documented) → `ProgressMatrixCard`; `/review` inbox mirrors `REVIEW_OFFSET_HOURS`, overdue bucket, verbatim reviewer starter prompt; SUMMARY phase books streak day + review ladder; replaces summary as destination via "Review inbox →" CTA. |
+| S8B-T3 Badges & streaks | ✅ Shipped | `lib/badge-catalog.ts` (universal ×4 + slugified subject badge) over `decideAwards`/`foldAwards`/`computeStreak`; earned/locked/revoked states + revoke affordance on `/badges`. |
+| S8B-T4 Wallet & verifier | ✅ Shipped | In-memory registry (`lib/server/certificates.ts`) + `/api/certificates` (issue idempotent, public verify) + `/api/certificates/render` (SVG/PDF download, Node runtime); verifier auto-corrects O/0·I/L per engine normalizer. Registry is process-local — persistence lands with the DB surfaces. |
+| S8B-T5 Privacy Center | ✅ Shipped | `/privacy`: granular toggles persisted to the learner ledger, append-only audit trail, live self-access decision via `resolveTranscriptAccess`, JSON export, revoke preserves 8a contract. |
+| S8B-T6 Educator portal | ✅ Shipped | Server components under role-gated layout; alias roster, heatmap with k≥5 suppression rendered server-side, topic locks + POST unlock requests (403 for non-instructors defense-in-depth), transcript raw/aggregates/DENY paths verified against minor/adult/unknown targets in prod smoke. |
+| S8B-T7 Polish pass | ◐ Partial | Palette commands cover all new routes + sign-out + educator entry (role-gated); sidebar placeholders removed (`/privacy` added). Lighthouse re-run and drawer/HUD gesture tuning still open. |
+
+Gates at snapshot: typecheck ✅ · eslint 0 errors ✅ (12 advisory warnings) · vitest web **55/55** ✅ incl. axe zero-critical on new surfaces ✅ · production build ✅ (all routes ≤141KB gz, middleware 34.7KB) · prod smoke ✅ (RBAC redirects 307s, 401/403 API gates, certificate issue→verify→render roundtrip, transcript raw/aggregates/DENY).
+
+Open follow-ups: Clerk flag-flip when vendor keys land; certificate registry + ledger server-side persistence with DB; Playwright `rbac.e2e.spec` (browser install decision from 8a still pending); Lighthouse re-run; mobile drawer ergonomics.

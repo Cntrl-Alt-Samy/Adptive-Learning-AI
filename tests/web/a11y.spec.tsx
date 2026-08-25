@@ -12,6 +12,17 @@ import { Shell } from '@/components/workspace/shell';
 import { Sidebar } from '@/components/workspace/sidebar';
 import { InspectorHud } from '@/components/workspace/inspector-hud';
 import { SessionProvider } from '@/hooks/session-store';
+import { LearnerLedgerProvider } from '@/hooks/learner-store';
+import { ReviewInbox } from '@/components/pedagogy/review-inbox';
+import { MisconceptionHeatmap } from '@/components/educator/heatmap';
+
+function WithLedger({ children }: { children: React.ReactNode }): React.ReactNode {
+  return (
+    <SessionProvider>
+      <LearnerLedgerProvider>{children}</LearnerLedgerProvider>
+    </SessionProvider>
+  );
+}
 
 /**
  * S8A-T8 a11y.audit — axe-core over the mounted workspace shell, sidebar,
@@ -35,12 +46,12 @@ afterEach(cleanup);
 describe('a11y.audit (zero critical)', () => {
   it('workspace shell with learner content', async () => {
     const { baseElement } = render(
-      <SessionProvider>
+      <WithLedger>
         <Shell mode="TUTOR" confirmedStep={3} latencyMs={800} minutesRemaining={20}>
           <h1>Today</h1>
           <p>Delivery content streams here.</p>
         </Shell>
-      </SessionProvider>
+      </WithLedger>
     );
     expect(await auditCritical(baseElement)).toEqual([]);
   });
@@ -58,6 +69,23 @@ describe('a11y.audit (zero critical)', () => {
         />
         <InspectorHud mode="SOCRATIC_COACH" confirmedStep={5} latencyMs={1400} minutesRemaining={12} />
       </SessionProvider>
+    );
+    expect(await auditCritical(baseElement)).toEqual([]);
+  });
+
+  it('Sprint 8b — review inbox, badge shelf, privacy center, heatmap', async () => {
+    const { BadgeShelf } = await import('@/components/badges/badge-shelf');
+    const { PrivacyCenter } = await import('@/components/privacy/privacy-center');
+    const { baseElement } = render(
+      <WithLedger>
+        <ReviewInbox reviews={[]} matrix={null} sessionSubject="Economics" titles={{}} />
+        <BadgeShelf />
+        <PrivacyCenter />
+        <MisconceptionHeatmap
+          matrix={{ cells: [{ conceptId: 'eco_a', failedPct: 50, learnerCount: 6 }], suppressedConceptIds: [] }}
+          titles={{ eco_a: 'Alpha' }}
+        />
+      </WithLedger>
     );
     expect(await auditCritical(baseElement)).toEqual([]);
   });

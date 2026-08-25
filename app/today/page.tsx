@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { AlertModal } from '@/components/mac';
 import { Shell } from '@/components/workspace/shell';
@@ -11,7 +11,9 @@ import { PracticeFlow } from '@/components/pedagogy/practice-flow';
 import { SocraticRail } from '@/components/pedagogy/socratic-rail';
 import { SessionSummary } from '@/components/pedagogy/session-summary';
 import { useSession } from '@/hooks/session-store';
+import { useLedger, type ScheduledReviewItem } from '@/hooks/learner-store';
 import { useTutorStream } from '@/hooks/use-tutor-stream';
+import { REVIEW_OFFSET_HOURS } from '@/src/pedagogy/progress.js';
 
 type Phase = 'DELIVERY' | 'SOCRATIC' | 'PRACTICE' | 'SUMMARY';
 
@@ -23,11 +25,17 @@ type Phase = 'DELIVERY' | 'SOCRATIC' | 'PRACTICE' | 'SUMMARY';
 export default function TodayPage() {
   const router = useRouter();
   const session = useSession();
+  const ledger = useLedger();
   const [phase, setPhase] = useState<Phase>('DELIVERY');
   const [conceptIndex, setConceptIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [deniedEducator, setDeniedEducator] = useState(false);
+  const summaryBookkeptRef = useRef(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    if (new URLSearchParams(window.location.search).get('denied') === 'educator') setDeniedEducator(true);
+  }, []);
 
   useEffect(() => {
     if (!mounted) return;
@@ -36,6 +44,28 @@ export default function TodayPage() {
   }, [mounted, session.persona, session.plan, router]);
 
   const stream = useTutorStream(session.sessionId);
+
+  // S8B-T2 — bookkeep once when the session completes: streak day + the
+  // full REVIEW_OFFSET_HOURS ladder (24h/3d/7d/14d) for each finished concept.
+  useEffect(() => {
+    if (!mounted || phase !== 'SUMMARY' || summaryBookkeptRef.current) return;
+    summaryBookkeptRef.current = true;
+    const today = new Date().toISOString().slice(0, 10);
+    ledger.recordSessionDay(today);
+    const now = Date.now();
+    ledger.scheduleReviews(
+      session.conceptProgress.flatMap((c): ScheduledReviewItem[] =>
+        REVIEW_OFFSET_HOURS.map((offsetHours) => ({
+          conceptId: c.conceptId,
+          subjectId: session.persona?.subjectId ?? '',
+          offsetHours,
+          dueAtMs: now + offsetHours * 3_600_000
+        }))
+      )
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, phase]);
+
   if (!mounted || session.persona === null || session.plan === null) return null;
 
   const plan = session.plan;
@@ -119,6 +149,18 @@ export default function TodayPage() {
       </div>
 
       <AlertModal error={stream.error} onRetry={stream.dismissError} onDismiss={stream.dismissError} />
+      <AlertModal
+        error={
+          deniedEducator
+            ? { code: 'EDUCATOR_ONLY', message: 'The educator portal is limited to instructor accounts. You have been returned to your workspace.', retryable: false }
+            : null
+        }
+        onRetry={() => setDeniedEducator(false)}
+        onDismiss={() => {
+          setDeniedEducator(false);
+          window.history.replaceState(null, '', '/today');
+        }}
+      />
     </Shell>
   );
 }

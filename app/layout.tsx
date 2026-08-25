@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { ThemeProvider, themeBootstrapScript } from '@/components/theme-provider';
 import { SessionProvider } from '@/hooks/session-store';
+import { LearnerLedgerProvider } from '@/hooks/learner-store';
 import 'katex/dist/katex.min.css';
 import './globals.css';
 
@@ -18,7 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-window text-label">
         <ThemeProvider>
-          <SessionProvider>{children}</SessionProvider>
+          <SessionProvider>
+            <LearnerLedgerProvider>{children}</LearnerLedgerProvider>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { AlertModal, PushButton, SegmentedControl } from '@/components/mac';
@@ -82,8 +83,11 @@ export default function SettingsPage() {
             )}
           </p>
           <p className="mt-1 text-caption-1 text-tertiary-label">
-            Revoking signs you out of the demo workspace and clears local progress. The full Privacy Center
-            (transcript export & erasure requests) arrives in Sprint 8b.
+            Granular preferences, export and the audit trail live in the{' '}
+            <Link href="/privacy" className="focus-halo rounded-control text-sys-blue underline-offset-2 hover:underline">
+              Privacy Center
+            </Link>
+            . Revoking here signs you out and clears local progress.
           </p>
           <PushButton variant="destructive" className="mt-2" onClick={revokeConsent} disabled={!consentOk}>
             Revoke consent

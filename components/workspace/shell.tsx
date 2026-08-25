@@ -7,6 +7,7 @@ import { CommandPalette, PushButton } from '@/components/mac';
 import { Sidebar } from './sidebar';
 import { InspectorHud } from './inspector-hud';
 import type { ConceptProgress } from '@/hooks/session-store';
+import { useLedger } from '@/hooks/learner-store';
 import type { AiModeName } from '@/src/state/transition-table.js';
 
 interface ShellProps {
@@ -35,6 +36,7 @@ export function Shell({
   activeConceptId = null
 }: ShellProps) {
   const router = useRouter();
+  const ledger = useLedger();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
@@ -102,8 +104,22 @@ export function Shell({
         commands={[
           { id: 'nav-today', title: 'Go to Today', perform: () => router.push('/today') },
           { id: 'nav-plan', title: 'Go to Plan', perform: () => router.push('/plan') },
+          { id: 'nav-review', title: 'Go to Review inbox', perform: () => router.push('/review') },
+          { id: 'nav-badges', title: 'Go to Badges', perform: () => router.push('/badges') },
+          { id: 'nav-privacy', title: 'Open Privacy Center', perform: () => router.push('/privacy') },
           { id: 'nav-settings', title: 'Go to Settings', perform: () => router.push('/settings') },
-          { id: 'nav-onboarding', title: 'Restart onboarding', perform: () => router.push('/onboarding') }
+          ...(ledger.role === 'INSTRUCTOR' || ledger.role === 'ADMIN'
+            ? [{ id: 'nav-educator', title: 'Open Educator console', perform: () => router.push('/educator') }]
+            : []),
+          {
+            id: 'sign-out',
+            title: 'Sign out',
+            perform: () => {
+              void fetch('/api/auth/session', { method: 'DELETE' }).finally(() => {
+                router.push('/signin');
+              });
+            }
+          }
         ]}
       />
     </div>

@@ -9,8 +9,9 @@ import type { ConceptProgress } from '@/hooks/session-store';
 const NAV = [
   { href: '/today', label: 'Today', icon: '◉' },
   { href: '/plan', label: 'Plan', icon: '▤' },
-  { href: '/review', label: 'Review', icon: '⟳', disabled: true },
-  { href: '/badges', label: 'Badges', icon: '✦', disabled: true },
+  { href: '/review', label: 'Review', icon: '⟳' },
+  { href: '/badges', label: 'Badges', icon: '✦' },
+  { href: '/privacy', label: 'Privacy', icon: '🛡' },
   { href: '/settings', label: 'Settings', icon: '⚙' }
 ] as const;
 
@@ -21,39 +22,26 @@ interface SidebarProps {
 }
 
 /** §4.5 source-list sidebar — nav + roadmap nodes with mastery dots.
- *  Review/Badges render disabled ("Coming in 8b") until that sprint mounts them. */
+ *  Review/Badges/Privacy mounted as of Sprint 8b. */
 export function Sidebar({ roadmap, progress, activeConceptId }: SidebarProps) {
   const pathname = usePathname();
   return (
     <nav aria-label="Workspace" className="flex h-full flex-col gap-4 overflow-y-auto p-3">
       <ul className="space-y-0.5">
-        {NAV.map((item) =>
-          'disabled' in item && item.disabled === true ? (
-            <li key={item.href}>
-              <span
-                aria-disabled
-                aria-label={`${item.label} — coming in Sprint 8b`}
-                className="flex cursor-not-allowed items-center gap-2 rounded-control px-2 py-1 text-headline text-tertiary-label"
-              >
-                <span aria-hidden>{item.icon}</span>
-                {item.label}
-              </span>
-            </li>
-          ) : (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                aria-current={pathname === item.href ? 'page' : undefined}
-                className={`focus-halo flex items-center gap-2 rounded-control px-2 py-1 text-headline ${
-                  pathname === item.href ? 'bg-sys-blue/15 text-label' : 'text-secondary-label hover:bg-gray5'
-                }`}
-              >
-                <span aria-hidden>{item.icon}</span>
-                {item.label}
-              </Link>
-            </li>
-          )
-        )}
+        {NAV.map((item) => (
+          <li key={item.href}>
+            <Link
+              href={item.href}
+              aria-current={pathname === item.href ? 'page' : undefined}
+              className={`focus-halo flex items-center gap-2 rounded-control px-2 py-1 text-headline ${
+                pathname === item.href ? 'bg-sys-blue/15 text-label' : 'text-secondary-label hover:bg-gray5'
+              }`}
+            >
+              <span aria-hidden>{item.icon}</span>
+              {item.label}
+            </Link>
+          </li>
+        ))}
       </ul>
 
       {roadmap.length > 0 && (
