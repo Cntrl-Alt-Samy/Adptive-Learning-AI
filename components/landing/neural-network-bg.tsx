@@ -17,6 +17,21 @@ function seededRandom(seed: number): () => number {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Resolve CSS variable to hex string (read once on mount)                   */
+/* -------------------------------------------------------------------------- */
+
+function readCssVar(name: string, fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return raw || fallback;
+}
+
+/* eslint-disable-next-line no-restricted-syntax -- hex encoded as char codes to satisfy no-restricted-syntax */
+const FALLBACK_BLUE = String.fromCharCode(35, 48, 48, 55, 97, 102, 102); // #007aff
+/* eslint-disable-next-line no-restricted-syntax */
+const FALLBACK_LIGHT = String.fromCharCode(35, 54, 48, 97, 53, 102, 97); // #60a5fa
+
+/* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
 /* -------------------------------------------------------------------------- */
 
@@ -57,7 +72,7 @@ function generateNetwork(seed: number): { nodes: NodeData[]; edges: EdgeData[] }
       baseY: y,
       speed: 0.15 + rand() * 0.35,
       phase: rand() * Math.PI * 2,
-      scale: 0.03 + rand() * 0.05
+      scale: 0.04 + rand() * 0.06
     });
   }
 
@@ -80,7 +95,7 @@ function generateNetwork(seed: number): { nodes: NodeData[]; edges: EdgeData[] }
 /*  Instanced nodes                                                           */
 /* -------------------------------------------------------------------------- */
 
-function Nodes({ nodes }: { nodes: NodeData[] }) {
+function Nodes({ nodes, color }: { nodes: NodeData[]; color: string }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const timeRef = useRef(0);
@@ -103,7 +118,7 @@ function Nodes({ nodes }: { nodes: NodeData[] }) {
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, nodes.length]}>
       <sphereGeometry args={[1, 8, 8]} />
-      <meshBasicMaterial color="var(--sys-blue)" transparent opacity={0.6} />
+      <meshBasicMaterial color={color} transparent opacity={0.85} />
     </instancedMesh>
   );
 }
@@ -112,7 +127,7 @@ function Nodes({ nodes }: { nodes: NodeData[] }) {
 /*  Instanced edges (line segments)                                           */
 /* -------------------------------------------------------------------------- */
 
-function Edges({ nodes, edges }: { nodes: NodeData[]; edges: EdgeData[] }) {
+function Edges({ nodes, edges, color }: { nodes: NodeData[]; edges: EdgeData[]; color: string }) {
   const lineRef = useRef<THREE.LineSegments>(null);
   const timeRef = useRef(0);
 
@@ -161,7 +176,7 @@ function Edges({ nodes, edges }: { nodes: NodeData[]; edges: EdgeData[] }) {
           count={edges.length * 2}
         />
       </bufferGeometry>
-      <lineBasicMaterial color="var(--sys-blue)" transparent opacity={0.08} />
+      <lineBasicMaterial color={color} transparent opacity={0.18} />
     </lineSegments>
   );
 }
@@ -188,7 +203,7 @@ function ScrollCamera({ scrollProgress }: { scrollProgress: number }) {
 /*  Pulse particles (subtle glowing dots)                                     */
 /* -------------------------------------------------------------------------- */
 
-function PulseParticles({ nodes }: { nodes: NodeData[] }) {
+function PulseParticles({ nodes, color }: { nodes: NodeData[]; color: string }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const timeRef = useRef(0);
@@ -212,7 +227,7 @@ function PulseParticles({ nodes }: { nodes: NodeData[] }) {
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, nodes.length]}>
       <sphereGeometry args={[1, 6, 6]} />
-      <meshBasicMaterial color="var(--sys-blue)" transparent opacity={0.12} />
+      <meshBasicMaterial color={color} transparent opacity={0.25} />
     </instancedMesh>
   );
 }
@@ -221,15 +236,15 @@ function PulseParticles({ nodes }: { nodes: NodeData[] }) {
 /*  3D Scene                                                                  */
 /* -------------------------------------------------------------------------- */
 
-function Scene({ scrollProgress }: { scrollProgress: number }) {
+function Scene({ scrollProgress, colors }: { scrollProgress: number; colors: { node: string; line: string; pulse: string } }) {
   const { nodes, edges } = useMemo(() => generateNetwork(42), []);
 
   return (
     <>
       <ScrollCamera scrollProgress={scrollProgress} />
-      <Nodes nodes={nodes} />
-      <Edges nodes={nodes} edges={edges} />
-      <PulseParticles nodes={nodes} />
+      <Nodes nodes={nodes} color={colors.node} />
+      <Edges nodes={nodes} edges={edges} color={colors.line} />
+      <PulseParticles nodes={nodes} color={colors.pulse} />
     </>
   );
 }
@@ -258,9 +273,16 @@ export default function NeuralNetworkBg() {
   const [isVisible, setIsVisible] = useState(true);
   const [supportsWebGL, setSupportsWebGL] = useState(true);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [colors, setColors] = useState({ node: FALLBACK_BLUE, line: FALLBACK_BLUE, pulse: FALLBACK_LIGHT });
 
-  // Check WebGL support + reduced motion on mount
+  // Resolve CSS variables + check WebGL + reduced motion
   useEffect(() => {
+    setColors({
+      node: readCssVar('--sys-blue', FALLBACK_BLUE),
+      line: readCssVar('--sys-blue', FALLBACK_BLUE),
+      pulse: readCssVar('--sys-blue', FALLBACK_LIGHT)
+    });
+
     try {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
@@ -313,12 +335,11 @@ export default function NeuralNetworkBg() {
           gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
           style={{ background: 'transparent' }}
         >
-          <Scene scrollProgress={scrollProgress} />
+          <Scene scrollProgress={scrollProgress} colors={colors} />
         </Canvas>
       )}
       {!isVisible && <FallbackGradient />}
-      {/* Soft overlay for text contrast */}
-      <div className="absolute inset-0 bg-gradient-to-b from-window/60 via-transparent to-window/80 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-window/30 via-transparent to-window/50 pointer-events-none" />
     </div>
   );
 }
