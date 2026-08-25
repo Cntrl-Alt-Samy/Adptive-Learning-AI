@@ -255,7 +255,7 @@ function Scene({ scrollProgress, colors }: { scrollProgress: number; colors: { n
 
 function FallbackGradient() {
   return (
-    <div className="absolute inset-0 -z-10">
+    <div className="absolute inset-0 z-0">
       <div className="absolute top-0 left-1/2 h-[800px] w-[1200px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-sys-blue/5 blur-3xl" />
       <div className="absolute top-40 right-0 h-[500px] w-[500px] rounded-full bg-sys-purple/5 blur-3xl" />
       <div className="absolute bottom-20 left-0 h-[400px] w-[400px] rounded-full bg-sys-indigo/4 blur-3xl" />
@@ -327,7 +327,7 @@ export default function NeuralNetworkBg() {
   }
 
   return (
-    <div ref={containerRef} className="absolute inset-0 -z-10">
+    <div ref={containerRef} className="absolute inset-0 z-0">
       {isVisible && (
         <Canvas
           camera={{ position: [0, 1.5, 8], fov: 50 }}

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import {
   Menu,
   X,
@@ -32,7 +31,7 @@ import {
   Sparkles
 } from 'lucide-react';
 
-const NeuralNetworkBg = dynamic(() => import('@/components/landing/neural-network-bg'), { ssr: false });
+import NeuralNetworkBg from '../../components/landing/neural-network-bg';
 
 /* -------------------------------------------------------------------------- */
 /*  Data                                                                      */
@@ -323,7 +322,7 @@ export default function LandingPage() {
       {/* ------------------------------------------------------------------ */}
       {/*  Hero                                                               */}
       {/* ------------------------------------------------------------------ */}
-      <section id="home" className="relative overflow-hidden pt-28 pb-20 sm:pt-36 sm:pb-28">
+      <section id="home" className="relative isolate overflow-hidden pt-28 pb-20 sm:pt-36 sm:pb-28">
         <NeuralNetworkBg />
 
         <div className="mx-auto max-w-6xl px-4 sm:px-6 relative z-10">
