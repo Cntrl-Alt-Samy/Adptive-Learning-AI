@@ -1,0 +1,19 @@
+{
+  "id": "3a3264ae-f261-420e-a6de-ed28400ccfa6",
+  "tenantId": "00000000-0000-0000-0000-000000000000",
+  "uploadedBy": "00000000-0000-0000-0000-000000000000",
+  "title": "GCSE Geography Subject Content",
+  "subject": "Geography",
+  "examBoard": "DfE",
+  "stage": "gcse",
+  "fileName": "gcse-geography.pdf",
+  "filePath": "gcse-geography.pdf",
+  "fileSizeBytes": 231670,
+  "pageCount": 12,
+  "chunkCount": 31,
+  "status": "uploaded",
+  "sourceUrl": "https://www.gov.uk/government/collections/gcse-subject-content",
+  "processedAt": "2026-08-25T20:47:16.292Z",
+  "createdAt": "2026-08-25T20:47:16.292Z",
+  "updatedAt": "2026-08-25T20:47:16.292Z"
+}

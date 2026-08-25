@@ -19,6 +19,7 @@ export default async function EducatorLayout({ children }: { children: React.Rea
 
   const tabs = [
     { href: '/educator', label: 'Roster' },
+    { href: '/educator/library', label: 'Library' },
     { href: '/educator/misconceptions', label: 'Misconceptions' },
     { href: '/educator/locks', label: 'Topic locks' },
     { href: '/educator/transcripts', label: 'Transcripts' }

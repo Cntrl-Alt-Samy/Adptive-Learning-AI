@@ -26,7 +26,9 @@
     "db:migrate": "tsx scripts/db-migrate.ts",
     "evals:golden": "tsx scripts/run-golden-evals.ts",
     "migrations:verify": "tsx scripts/check-migrations.ts",
-    "smoke:ga": "tsx scripts/ga-smoke.ts"
+    "smoke:ga": "tsx scripts/ga-smoke.ts",
+    "syllabus:ingest:dry": "tsx scripts/ingest-syllabus.ts --dry-run",
+    "syllabus:ingest": "tsx scripts/ingest-syllabus.ts"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^6.1.2",
@@ -37,6 +39,7 @@
     "ioredis": "^5.8.0",
     "katex": "^0.18.4",
     "next": "^15.5.23",
+    "pdf-parse": "^2.4.5",
     "pg": "^8.16.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

@@ -1,0 +1,19 @@
+{
+  "id": "1589496a-d635-4421-adb1-8cc3e7238f14",
+  "tenantId": "00000000-0000-0000-0000-000000000000",
+  "uploadedBy": "00000000-0000-0000-0000-000000000000",
+  "title": "GCSE English Literature Subject Content",
+  "subject": "English Literature",
+  "examBoard": "DfE",
+  "stage": "gcse",
+  "fileName": "gcse-english-literature.pdf",
+  "filePath": "gcse-english-literature.pdf",
+  "fileSizeBytes": 102507,
+  "pageCount": 7,
+  "chunkCount": 8,
+  "status": "uploaded",
+  "sourceUrl": "https://www.gov.uk/government/collections/gcse-subject-content",
+  "processedAt": "2026-08-25T20:47:16.234Z",
+  "createdAt": "2026-08-25T20:47:16.234Z",
+  "updatedAt": "2026-08-25T20:47:16.234Z"
+}

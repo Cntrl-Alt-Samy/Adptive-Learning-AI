@@ -1,0 +1,19 @@
+{
+  "id": "45cde86f-79ea-4cd8-a45c-fd34126cd7b3",
+  "tenantId": "00000000-0000-0000-0000-000000000000",
+  "uploadedBy": "00000000-0000-0000-0000-000000000000",
+  "title": "GCSE History Subject Content",
+  "subject": "History",
+  "examBoard": "DfE",
+  "stage": "gcse",
+  "fileName": "gcse-history.pdf",
+  "filePath": "gcse-history.pdf",
+  "fileSizeBytes": 161910,
+  "pageCount": 7,
+  "chunkCount": 19,
+  "status": "uploaded",
+  "sourceUrl": "https://www.gov.uk/government/collections/gcse-subject-content",
+  "processedAt": "2026-08-25T20:47:16.334Z",
+  "createdAt": "2026-08-25T20:47:16.334Z",
+  "updatedAt": "2026-08-25T20:47:16.334Z"
+}

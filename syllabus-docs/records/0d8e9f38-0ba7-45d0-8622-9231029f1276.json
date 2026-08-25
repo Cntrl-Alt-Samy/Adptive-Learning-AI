@@ -1,0 +1,19 @@
+{
+  "id": "0d8e9f38-0ba7-45d0-8622-9231029f1276",
+  "tenantId": "00000000-0000-0000-0000-000000000000",
+  "uploadedBy": "00000000-0000-0000-0000-000000000000",
+  "title": "GCSE Combined Science Subject Content",
+  "subject": "Combined Science",
+  "examBoard": "DfE",
+  "stage": "gcse",
+  "fileName": "gcse-combined-science.pdf",
+  "filePath": "gcse-combined-science.pdf",
+  "fileSizeBytes": 1079669,
+  "pageCount": 43,
+  "chunkCount": 55,
+  "status": "uploaded",
+  "sourceUrl": "https://www.gov.uk/government/collections/gcse-subject-content",
+  "processedAt": "2026-08-25T20:47:16.088Z",
+  "createdAt": "2026-08-25T20:47:16.088Z",
+  "updatedAt": "2026-08-25T20:47:16.088Z"
+}

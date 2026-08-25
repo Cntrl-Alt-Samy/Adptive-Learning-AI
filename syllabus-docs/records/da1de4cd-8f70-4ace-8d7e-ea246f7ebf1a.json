@@ -1,0 +1,19 @@
+{
+  "id": "da1de4cd-8f70-4ace-8d7e-ea246f7ebf1a",
+  "tenantId": "00000000-0000-0000-0000-000000000000",
+  "uploadedBy": "00000000-0000-0000-0000-000000000000",
+  "title": "GCSE English Language Subject Content",
+  "subject": "English Language",
+  "examBoard": "DfE",
+  "stage": "gcse",
+  "fileName": "gcse-english-language.pdf",
+  "filePath": "gcse-english-language.pdf",
+  "fileSizeBytes": 100403,
+  "pageCount": 7,
+  "chunkCount": 8,
+  "status": "uploaded",
+  "sourceUrl": "https://www.gov.uk/government/collections/gcse-subject-content",
+  "processedAt": "2026-08-25T20:47:16.191Z",
+  "createdAt": "2026-08-25T20:47:16.192Z",
+  "updatedAt": "2026-08-25T20:47:16.192Z"
+}

@@ -1,0 +1,19 @@
+{
+  "id": "7938974b-bf79-40e0-86fa-35a71515b35d",
+  "tenantId": "00000000-0000-0000-0000-000000000000",
+  "uploadedBy": "00000000-0000-0000-0000-000000000000",
+  "title": "GCSE Economics Subject Content",
+  "subject": "Economics",
+  "examBoard": "DfE",
+  "stage": "gcse",
+  "fileName": "gcse-economics.pdf",
+  "filePath": "gcse-economics.pdf",
+  "fileSizeBytes": 185431,
+  "pageCount": 7,
+  "chunkCount": 19,
+  "status": "uploaded",
+  "sourceUrl": "https://www.gov.uk/government/collections/gcse-subject-content",
+  "processedAt": "2026-08-25T20:47:16.142Z",
+  "createdAt": "2026-08-25T20:47:16.142Z",
+  "updatedAt": "2026-08-25T20:47:16.142Z"
+}

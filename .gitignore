@@ -16,3 +16,7 @@ playwright-report/
 # Secrets — never commit
 .env
 .env.local
+
+# Syllabus library — PDFs downloaded from gov.uk (re-runnable via ingest script)
+syllabus-docs/*.pdf
+syllabus-docs/uploads/

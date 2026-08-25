@@ -1,0 +1,19 @@
+{
+  "id": "c53d2439-137b-45b7-b47f-278a838586cc",
+  "tenantId": "00000000-0000-0000-0000-000000000000",
+  "uploadedBy": "00000000-0000-0000-0000-000000000000",
+  "title": "GCSE Mathematics Subject Content",
+  "subject": "Mathematics",
+  "examBoard": "DfE",
+  "stage": "gcse",
+  "fileName": "gcse-mathematics.pdf",
+  "filePath": "gcse-mathematics.pdf",
+  "fileSizeBytes": 588753,
+  "pageCount": 17,
+  "chunkCount": 24,
+  "status": "uploaded",
+  "sourceUrl": "https://www.gov.uk/government/collections/gcse-subject-content",
+  "processedAt": "2026-08-25T20:47:16.445Z",
+  "createdAt": "2026-08-25T20:47:16.445Z",
+  "updatedAt": "2026-08-25T20:47:16.445Z"
+}
