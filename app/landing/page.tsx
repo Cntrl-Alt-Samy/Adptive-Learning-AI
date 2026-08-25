@@ -2,14 +2,37 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import {
+  Menu,
+  X,
+  ClipboardCheck,
+  Route,
+  Zap,
+  Activity,
+  GraduationCap,
+  FlaskConical,
+  ClipboardList,
+  Shield,
+  Check,
+  Users,
+  Trophy,
+  Star,
+  BookOpen,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  MessageSquare,
+  Briefcase,
+  Camera,
+  Video,
+  ChevronRight,
+  ArrowRight,
+  Sparkles
+} from 'lucide-react';
 
-/**
- * LearnOS Landing Page — marketing site with hero, product, pricing,
- * about, testimonials, auth modal, and footer.
- *
- * Uses the iOS HIG design tokens from styles/tokens.css for consistency
- * with the tutor workspace.
- */
+const NeuralNetworkBg = dynamic(() => import('@/components/landing/neural-network-bg'), { ssr: false });
 
 /* -------------------------------------------------------------------------- */
 /*  Data                                                                      */
@@ -25,44 +48,25 @@ const NAV_LINKS = [
 
 const FEATURES = [
   {
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
-        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
-        <rect x="9" y="3" width="6" height="4" rx="1" />
-        <path d="M9 14l2 2 4-4" />
-      </svg>
-    ),
+    icon: ClipboardCheck,
     title: 'Diagnostic Assessment',
     description: 'A quick adaptive calibration quiz pinpoints each learner\'s starting level across every topic — no guessing, no wasted time.',
     color: 'bg-sys-blue/10 text-sys-blue'
   },
   {
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
-        <path d="M4 6h16M4 12h16M4 18h7" />
-        <circle cx="20" cy="18" r="2" />
-      </svg>
-    ),
+    icon: Route,
     title: 'Personalised Learning Path',
     description: 'The AI builds a prerequisite-aware roadmap unique to you, sequencing concepts so each lesson builds naturally on the last.',
     color: 'bg-sys-green/10 text-sys-green'
   },
   {
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
-        <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
+    icon: Zap,
     title: 'Real-Time AI Tutoring',
     description: 'Socratic questioning, worked examples, and instant feedback — all streamed live and tailored to the learner\'s current understanding.',
     color: 'bg-sys-orange/10 text-sys-orange'
   },
   {
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-      </svg>
-    ),
+    icon: Activity,
     title: 'Progress Analytics',
     description: 'Mastery scores, spaced-repetition scheduling, and decay tracking give learners and educators a clear view of real knowledge retention.',
     color: 'bg-sys-purple/10 text-sys-purple'
@@ -179,17 +183,17 @@ const TESTIMONIALS = [
 ];
 
 const STATS = [
-  { value: '50K+', label: 'Learners' },
-  { value: '95%', label: 'Completion rate' },
-  { value: '4.9', label: 'App rating' },
-  { value: '2M+', label: 'Lessons delivered' }
+  { value: '50K+', label: 'Learners', icon: Users },
+  { value: '95%', label: 'Completion rate', icon: Trophy },
+  { value: '4.9', label: 'App rating', icon: Star },
+  { value: '2M+', label: 'Lessons delivered', icon: BookOpen }
 ];
 
 const VALUES = [
-  { title: 'Learner-First', description: 'Every design decision starts with one question: does this help the learner understand better?', icon: '🎓' },
-  { title: 'Evidence-Based', description: 'Our engine is built on spaced repetition, the testing effect, and cognitive load theory — not hunches.', icon: '🔬' },
-  { title: 'Syllabus-Accurate', description: 'Content is grounded in official DfE syllabi. Lessons stay within specification, every time.', icon: '📋' },
-  { title: 'Privacy by Design', description: 'Parental consent gates, PII scrubbing, and encryption mean learner data is always protected.', icon: '🔒' }
+  { title: 'Learner-First', description: 'Every design decision starts with one question: does this help the learner understand better?', icon: GraduationCap },
+  { title: 'Evidence-Based', description: 'Our engine is built on spaced repetition, the testing effect, and cognitive load theory — not hunches.', icon: FlaskConical },
+  { title: 'Syllabus-Accurate', description: 'Content is grounded in official DfE syllabi. Lessons stay within specification, every time.', icon: ClipboardList },
+  { title: 'Privacy by Design', description: 'Parental consent gates, PII scrubbing, and encryption mean learner data is always protected.', icon: Shield }
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -203,13 +207,11 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
 
-  // Track scroll for sticky nav + active section highlight
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
-
       const sections = ['home', 'product', 'pricing', 'about', 'testimonials'];
-      for (const id of sections.reverse()) {
+      for (const id of [...sections].reverse()) {
         const el = document.getElementById(id);
         if (el && el.getBoundingClientRect().top <= 120) {
           setActiveSection(id);
@@ -221,7 +223,6 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Lock body scroll when mobile menu or auth modal is open
   useEffect(() => {
     const locked = mobileMenuOpen || authModal !== null;
     document.body.style.overflow = locked ? 'hidden' : '';
@@ -241,7 +242,6 @@ export default function LandingPage() {
         }`}
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 focus-halo rounded-control">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sys-blue text-[13px] font-bold text-white">
               L
@@ -249,7 +249,6 @@ export default function LandingPage() {
             <span className="text-headline font-semibold tracking-tight">LearnOS</span>
           </Link>
 
-          {/* Desktop nav */}
           <div className="hidden items-center gap-1 md:flex">
             {NAV_LINKS.map((link) => (
               <a
@@ -266,7 +265,6 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Desktop CTA */}
           <div className="hidden items-center gap-2 md:flex">
             <button
               onClick={() => setAuthModal('signin')}
@@ -282,25 +280,15 @@ export default function LandingPage() {
             </button>
           </div>
 
-          {/* Mobile hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="focus-halo rounded-control p-2 text-label md:hidden"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? (
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
-        {/* Mobile menu overlay */}
         {mobileMenuOpen && (
           <div className="fixed inset-0 top-16 z-40 bg-window/95 backdrop-blur-sm md:hidden">
             <div className="flex flex-col gap-1 p-4">
@@ -336,16 +324,12 @@ export default function LandingPage() {
       {/*  Hero                                                               */}
       {/* ------------------------------------------------------------------ */}
       <section id="home" className="relative overflow-hidden pt-28 pb-20 sm:pt-36 sm:pb-28">
-        {/* Background gradient */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/2 h-[600px] w-[900px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-sys-blue/5 blur-3xl" />
-          <div className="absolute top-20 right-0 h-[400px] w-[400px] rounded-full bg-sys-purple/5 blur-3xl" />
-        </div>
+        <NeuralNetworkBg />
 
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 relative z-10">
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sys-blue/20 bg-sys-blue/5 px-3 py-1 text-caption-1 font-medium text-sys-blue">
-              <span className="h-1.5 w-1.5 rounded-full bg-sys-blue animate-pulse" />
+              <Sparkles className="h-3.5 w-3.5" />
               Now supporting GCSE syllabi from the DfE
             </div>
 
@@ -363,15 +347,17 @@ export default function LandingPage() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={() => setAuthModal('signup')}
-                className="focus-halo rounded-[14px] bg-sys-blue px-7 py-3.5 text-headline font-semibold text-white hover:opacity-90 transition-all hover:shadow-lg hover:shadow-sys-blue/20"
+                className="focus-halo rounded-[14px] bg-sys-blue px-7 py-3.5 text-headline font-semibold text-white hover:opacity-90 transition-all hover:shadow-lg hover:shadow-sys-blue/20 inline-flex items-center gap-2"
               >
                 Start Learning Free
+                <ArrowRight className="h-4 w-4" />
               </button>
               <a
                 href="#product"
-                className="focus-halo rounded-[14px] border border-separator bg-text-background px-7 py-3.5 text-headline font-semibold text-label hover:bg-gray5 transition-colors"
+                className="focus-halo rounded-[14px] border border-separator bg-text-background px-7 py-3.5 text-headline font-semibold text-label hover:bg-gray5 transition-colors inline-flex items-center gap-2"
               >
                 See How It Works
+                <ChevronRight className="h-4 w-4" />
               </a>
             </div>
           </div>
@@ -386,7 +372,6 @@ export default function LandingPage() {
                 <div className="ml-4 h-2.5 w-32 rounded-full bg-gray5" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3">
-                {/* Sidebar mockup */}
                 <div className="hidden border-r border-separator bg-gray6/30 p-4 sm:block">
                   <div className="mb-3 h-2 w-16 rounded bg-gray4" />
                   {['Today', 'Plan', 'Review', 'Badges'].map((item, i) => (
@@ -396,7 +381,6 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-                {/* Main content mockup */}
                 <div className="col-span-2 p-6">
                   <div className="mb-4 h-3 w-48 rounded bg-label/10" />
                   <div className="mb-2 h-2 w-full rounded bg-label/5" />
@@ -424,9 +408,12 @@ export default function LandingPage() {
           {/* Stats strip */}
           <div className="mx-auto mt-12 flex max-w-2xl flex-wrap items-center justify-center gap-8 sm:gap-12">
             {STATS.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-title-1 font-bold text-label">{stat.value}</p>
-                <p className="text-caption-1 text-tertiary-label">{stat.label}</p>
+              <div key={stat.label} className="flex items-center gap-2 text-center">
+                <stat.icon className="h-5 w-5 text-sys-blue" />
+                <div>
+                  <p className="text-title-1 font-bold text-label">{stat.value}</p>
+                  <p className="text-caption-1 text-tertiary-label">{stat.label}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -448,24 +435,25 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Feature cards */}
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map((feature, i) => (
-              <div
-                key={feature.title}
-                className="group rounded-card border border-separator bg-text-background p-6 transition-all hover:shadow-lg hover:shadow-black/5 hover:-translate-y-1"
-              >
-                <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ${feature.color}`}>
-                  {feature.icon}
+            {FEATURES.map((feature, i) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={feature.title}
+                  className="group rounded-card border border-separator bg-text-background p-6 transition-all hover:shadow-lg hover:shadow-black/5 hover:-translate-y-1"
+                >
+                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ${feature.color}`}>
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <div className="mb-2 text-caption-1 font-medium text-tertiary-label">Step {i + 1}</div>
+                  <h3 className="text-headline font-semibold text-label">{feature.title}</h3>
+                  <p className="mt-2 text-callout leading-relaxed text-secondary-label">{feature.description}</p>
                 </div>
-                <div className="mb-2 text-caption-1 font-medium text-tertiary-label">Step {i + 1}</div>
-                <h3 className="text-headline font-semibold text-label">{feature.title}</h3>
-                <p className="mt-2 text-callout leading-relaxed text-secondary-label">{feature.description}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          {/* Comparison table */}
           <div className="mx-auto mt-20 max-w-3xl">
             <h3 className="mb-8 text-center text-title-2 font-bold text-label">
               Why adaptive beats traditional
@@ -478,15 +466,11 @@ export default function LandingPage() {
               {COMPARISON.map((row, i) => (
                 <div key={i} className={`grid grid-cols-2 ${i < COMPARISON.length - 1 ? 'border-b border-separator' : ''}`}>
                   <div className="flex items-center gap-3 px-5 py-3.5 text-callout text-secondary-label">
-                    <svg className="h-4 w-4 shrink-0 text-tertiary-label" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <X className="h-4 w-4 shrink-0 text-tertiary-label" />
                     {row.traditional}
                   </div>
                   <div className="flex items-center gap-3 px-5 py-3.5 text-callout font-medium text-label">
-                    <svg className="h-4 w-4 shrink-0 text-sys-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
+                    <Check className="h-4 w-4 shrink-0 text-sys-green" />
                     {row.adaptive}
                   </div>
                 </div>
@@ -511,7 +495,6 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Billing toggle */}
           <div className="mt-8 flex items-center justify-center gap-3">
             <span className={`text-callout font-medium ${!annualBilling ? 'text-label' : 'text-tertiary-label'}`}>Monthly</span>
             <button
@@ -533,7 +516,6 @@ export default function LandingPage() {
             )}
           </div>
 
-          {/* Pricing cards */}
           <div className="mx-auto mt-10 grid max-w-4xl gap-5 lg:grid-cols-3">
             {PRICING_PLANS.map((plan) => (
               <div
@@ -581,9 +563,7 @@ export default function LandingPage() {
                 <ul className="mt-6 flex-1 space-y-2.5">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5 text-callout text-secondary-label">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-sys-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-sys-green" />
                       {f}
                     </li>
                   ))}
@@ -619,13 +599,18 @@ export default function LandingPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {VALUES.map((v) => (
-                <div key={v.title} className="rounded-card border border-separator bg-text-background p-5 transition-all hover:shadow-md">
-                  <div className="mb-3 text-2xl">{v.icon}</div>
-                  <h3 className="text-headline font-semibold text-label">{v.title}</h3>
-                  <p className="mt-1.5 text-caption-1 leading-relaxed text-secondary-label">{v.description}</p>
-                </div>
-              ))}
+              {VALUES.map((v) => {
+                const Icon = v.icon;
+                return (
+                  <div key={v.title} className="rounded-card border border-separator bg-text-background p-5 transition-all hover:shadow-md">
+                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-sys-blue/10 text-sys-blue">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-headline font-semibold text-label">{v.title}</h3>
+                    <p className="mt-1.5 text-caption-1 leading-relaxed text-secondary-label">{v.description}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -666,9 +651,7 @@ export default function LandingPage() {
                 <div className="mt-4 flex items-center gap-2">
                   <div className="flex gap-0.5">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <svg key={s} className="h-3.5 w-3.5 text-sys-yellow" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
+                      <Star key={s} className="h-3.5 w-3.5 fill-sys-yellow text-sys-yellow" />
                     ))}
                   </div>
                   <span className="rounded-full bg-sys-green/10 px-2 py-0.5 text-caption-2 font-semibold text-sys-green">
@@ -696,15 +679,17 @@ export default function LandingPage() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={() => setAuthModal('signup')}
-                className="focus-halo rounded-[14px] bg-white px-7 py-3.5 text-headline font-semibold text-sys-blue hover:bg-white/90 transition-colors"
+                className="focus-halo rounded-[14px] bg-white px-7 py-3.5 text-headline font-semibold text-sys-blue hover:bg-white/90 transition-colors inline-flex items-center gap-2"
               >
                 Start Learning Free
+                <ArrowRight className="h-4 w-4" />
               </button>
               <a
                 href="#product"
-                className="focus-halo rounded-[14px] border border-white/30 px-7 py-3.5 text-headline font-semibold text-white hover:bg-white/10 transition-colors"
+                className="focus-halo rounded-[14px] border border-white/30 px-7 py-3.5 text-headline font-semibold text-white hover:bg-white/10 transition-colors inline-flex items-center gap-2"
               >
                 Explore Features
+                <ChevronRight className="h-4 w-4" />
               </a>
             </div>
           </div>
@@ -717,7 +702,6 @@ export default function LandingPage() {
       <footer className="border-t border-separator bg-gray6/30 py-12 sm:py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Brand */}
             <div className="sm:col-span-2 lg:col-span-1">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sys-blue text-[13px] font-bold text-white">L</div>
@@ -727,20 +711,24 @@ export default function LandingPage() {
                 The adaptive AI tutor that personalises every lesson to the learner.
               </p>
               <div className="mt-4 flex gap-3">
-                {['X', 'Li', 'Ig', 'Yt'].map((s) => (
+                {[
+                  { icon: MessageSquare, label: 'Twitter' },
+                  { icon: Briefcase, label: 'LinkedIn' },
+                  { icon: Camera, label: 'Instagram' },
+                  { icon: Video, label: 'YouTube' }
+                ].map((s) => (
                   <a
-                    key={s}
+                    key={s.label}
                     href="#"
-                    className="focus-halo flex h-8 w-8 items-center justify-center rounded-full bg-gray5 text-caption-2 font-semibold text-secondary-label hover:bg-gray4 transition-colors"
-                    aria-label={s}
+                    className="focus-halo flex h-8 w-8 items-center justify-center rounded-full bg-gray5 text-secondary-label hover:bg-gray4 transition-colors"
+                    aria-label={s.label}
                   >
-                    {s}
+                    <s.icon className="h-4 w-4" />
                   </a>
                 ))}
               </div>
             </div>
 
-            {/* Links */}
             <div>
               <h4 className="text-footnote font-semibold uppercase tracking-wider text-tertiary-label">Product</h4>
               <ul className="mt-3 space-y-2">
@@ -810,7 +798,6 @@ function AuthModal({
   const [showPassword, setShowPassword] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -819,7 +806,6 @@ function AuthModal({
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  // Close on backdrop click
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
   };
@@ -838,18 +824,14 @@ function AuthModal({
         ref={modalRef}
         className="w-full max-w-sm rounded-[20px] border border-separator bg-text-background p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
       >
-        {/* Close button */}
         <button
           onClick={onClose}
           className="focus-halo absolute right-4 top-4 rounded-full p-1.5 text-tertiary-label hover:text-label hover:bg-gray5 transition-colors"
           aria-label="Close"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X className="h-5 w-5" />
         </button>
 
-        {/* Header */}
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-sys-blue text-sm font-bold text-white">
             L
@@ -862,7 +844,6 @@ function AuthModal({
           </p>
         </div>
 
-        {/* Google SSO */}
         <button className="focus-halo flex w-full items-center justify-center gap-3 rounded-[12px] border border-separator bg-text-background px-4 py-2.5 text-callout font-medium text-label hover:bg-gray5 transition-colors">
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="var(--google-blue)" />
@@ -879,28 +860,31 @@ function AuthModal({
           <div className="h-px flex-1 bg-separator" />
         </div>
 
-        {/* Form */}
         <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-3">
           <div>
             <label className="text-caption-1 font-medium text-secondary-label">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="mt-1 w-full rounded-[12px] border border-separator bg-text-background px-3.5 py-2.5 text-callout text-label placeholder:text-tertiary-label focus:border-sys-blue focus:outline-none focus:ring-2 focus:ring-sys-blue/20 transition-colors"
-              required
-            />
+            <div className="relative mt-1">
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tertiary-label" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full rounded-[12px] border border-separator bg-text-background pl-10 pr-3.5 py-2.5 text-callout text-label placeholder:text-tertiary-label focus:border-sys-blue focus:outline-none focus:ring-2 focus:ring-sys-blue/20 transition-colors"
+                required
+              />
+            </div>
           </div>
           <div>
             <label className="text-caption-1 font-medium text-secondary-label">Password</label>
             <div className="relative mt-1">
+              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tertiary-label" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-[12px] border border-separator bg-text-background px-3.5 py-2.5 pr-10 text-callout text-label placeholder:text-tertiary-label focus:border-sys-blue focus:outline-none focus:ring-2 focus:ring-sys-blue/20 transition-colors"
+                className="w-full rounded-[12px] border border-separator bg-text-background pl-10 pr-10 py-2.5 text-callout text-label placeholder:text-tertiary-label focus:border-sys-blue focus:outline-none focus:ring-2 focus:ring-sys-blue/20 transition-colors"
                 required
               />
               <button
@@ -909,16 +893,7 @@ function AuthModal({
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-tertiary-label hover:text-secondary-label transition-colors"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? (
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                  </svg>
-                ) : (
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
