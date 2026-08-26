@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   Menu,
   X,
@@ -31,7 +32,15 @@ import {
   Sparkles
 } from 'lucide-react';
 
-import NeuralNetworkBg from '../../components/landing/neural-network-bg';
+const NeuralNetworkBg = dynamic(() => import('../../components/landing/neural-network-bg'), {
+  ssr: false,
+  loading: () => (
+    <div className="absolute inset-0 z-0">
+      <div className="absolute top-0 left-1/2 h-[800px] w-[1200px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-sys-blue/5 blur-3xl" />
+      <div className="absolute top-40 right-0 h-[500px] w-[500px] rounded-full bg-sys-purple/5 blur-3xl" />
+    </div>
+  )
+});
 
 /* -------------------------------------------------------------------------- */
 /*  Data                                                                      */

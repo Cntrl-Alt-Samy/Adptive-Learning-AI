@@ -1,8 +1,40 @@
 'use client';
 
-import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
+import { useRef, useMemo, useState, useEffect, useCallback, Component, type ReactNode } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+
+/* -------------------------------------------------------------------------- */
+/*  Error Boundary — catches WebGL / Canvas crashes, renders static fallback   */
+/* -------------------------------------------------------------------------- */
+
+interface ErrorBoundaryProps {
+  fallback: ReactNode;
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class CanvasErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[NeuralNetworkBg] Canvas error — falling back to static gradient:', error.message);
+    }
+  }
+
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Deterministic pseudo-random (seeded)                                       */
@@ -95,13 +127,13 @@ function generateNetwork(seed: number): { nodes: NodeData[]; edges: EdgeData[] }
 /*  Instanced nodes                                                           */
 /* -------------------------------------------------------------------------- */
 
-function Nodes({ nodes, color }: { nodes: NodeData[]; color: string }) {
+function Nodes({ nodes, color, paused }: { nodes: NodeData[]; color: string; paused: boolean }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const timeRef = useRef(0);
 
   useFrame((_, delta) => {
-    if (!meshRef.current) return;
+    if (!meshRef.current || paused) return;
     timeRef.current += delta;
 
     for (let i = 0; i < nodes.length; i++) {
@@ -127,12 +159,12 @@ function Nodes({ nodes, color }: { nodes: NodeData[]; color: string }) {
 /*  Instanced edges (line segments)                                           */
 /* -------------------------------------------------------------------------- */
 
-function Edges({ nodes, edges, color }: { nodes: NodeData[]; edges: EdgeData[]; color: string }) {
+function Edges({ nodes, edges, color, paused }: { nodes: NodeData[]; edges: EdgeData[]; color: string; paused: boolean }) {
   const lineRef = useRef<THREE.LineSegments>(null);
   const timeRef = useRef(0);
 
   useFrame((_, delta) => {
-    if (!lineRef.current) return;
+    if (!lineRef.current || paused) return;
     timeRef.current += delta;
 
     const geo = lineRef.current.geometry as THREE.BufferGeometry;
@@ -185,10 +217,11 @@ function Edges({ nodes, edges, color }: { nodes: NodeData[]; edges: EdgeData[]; 
 /*  Scroll-reactive camera                                                    */
 /* -------------------------------------------------------------------------- */
 
-function ScrollCamera({ scrollProgress }: { scrollProgress: number }) {
+function ScrollCamera({ scrollProgress, paused }: { scrollProgress: number; paused: boolean }) {
   const { camera } = useThree();
 
   useFrame(() => {
+    if (paused) return;
     const targetY = 1.5 - scrollProgress * 3;
     const targetZ = 8 + scrollProgress * 2;
     camera.position.y += (targetY - camera.position.y) * 0.05;
@@ -203,13 +236,13 @@ function ScrollCamera({ scrollProgress }: { scrollProgress: number }) {
 /*  Pulse particles (subtle glowing dots)                                     */
 /* -------------------------------------------------------------------------- */
 
-function PulseParticles({ nodes, color }: { nodes: NodeData[]; color: string }) {
+function PulseParticles({ nodes, color, paused }: { nodes: NodeData[]; color: string; paused: boolean }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const timeRef = useRef(0);
 
   useFrame((_, delta) => {
-    if (!meshRef.current) return;
+    if (!meshRef.current || paused) return;
     timeRef.current += delta;
 
     for (let i = 0; i < nodes.length; i++) {
@@ -236,24 +269,28 @@ function PulseParticles({ nodes, color }: { nodes: NodeData[]; color: string }) 
 /*  3D Scene                                                                  */
 /* -------------------------------------------------------------------------- */
 
-function Scene({ scrollProgress, colors }: { scrollProgress: number; colors: { node: string; line: string; pulse: string } }) {
+function Scene({ scrollProgress, colors, paused }: {
+  scrollProgress: number;
+  colors: { node: string; line: string; pulse: string };
+  paused: boolean;
+}) {
   const { nodes, edges } = useMemo(() => generateNetwork(42), []);
 
   return (
     <>
-      <ScrollCamera scrollProgress={scrollProgress} />
-      <Nodes nodes={nodes} color={colors.node} />
-      <Edges nodes={nodes} edges={edges} color={colors.line} />
-      <PulseParticles nodes={nodes} color={colors.pulse} />
+      <ScrollCamera scrollProgress={scrollProgress} paused={paused} />
+      <Nodes nodes={nodes} color={colors.node} paused={paused} />
+      <Edges nodes={nodes} edges={edges} color={colors.line} paused={paused} />
+      <PulseParticles nodes={nodes} color={colors.pulse} paused={paused} />
     </>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Fallback gradient (no WebGL / reduced motion)                             */
+/*  Static gradient (no WebGL / SSR fallback)                                 */
 /* -------------------------------------------------------------------------- */
 
-function FallbackGradient() {
+function StaticGradient() {
   return (
     <div className="absolute inset-0 z-0">
       <div className="absolute top-0 left-1/2 h-[800px] w-[1200px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-sys-blue/5 blur-3xl" />
@@ -270,12 +307,17 @@ function FallbackGradient() {
 export default function NeuralNetworkBg() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-  const [supportsWebGL, setSupportsWebGL] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [supportsWebGL, setSupportsWebGL] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [webglFailed, setWebglFailed] = useState(false);
   const [colors, setColors] = useState({ node: FALLBACK_BLUE, line: FALLBACK_BLUE, pulse: FALLBACK_LIGHT });
 
-  // Resolve CSS variables + check WebGL + reduced motion
+  // All browser-detection + CSS variable resolution runs ONCE on client mount.
+  // State starts as "unsupported" so the first render always shows StaticGradient,
+  // avoiding any SSR/hydration mismatch. Canvas only mounts after this effect flips
+  // the flags, which is safe because this component is loaded via next/dynamic ssr:false.
   useEffect(() => {
     setColors({
       node: readCssVar('--sys-blue', FALLBACK_BLUE),
@@ -284,9 +326,19 @@ export default function NeuralNetworkBg() {
     });
 
     try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-      if (!gl) setSupportsWebGL(false);
+      const testCanvas = document.createElement('canvas');
+      const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl');
+      if (!gl) {
+        setSupportsWebGL(false);
+      } else {
+        // Test that we can actually use the context (some browsers report
+        // support but then lose the context immediately on low-power GPUs).
+        const ok = gl.getContextAttributes?.() != null;
+        setSupportsWebGL(ok);
+        // Lose the test context to free resources.
+        const loseExt = gl.getExtension('WEBGL_lose_context');
+        loseExt?.loseContext();
+      }
     } catch {
       setSupportsWebGL(false);
     }
@@ -295,6 +347,9 @@ export default function NeuralNetworkBg() {
     setPrefersReducedMotion(mq.matches);
     const onChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
     mq.addEventListener('change', onChange);
+
+    setMounted(true);
+
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
@@ -310,7 +365,7 @@ export default function NeuralNetworkBg() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
-  // IntersectionObserver: pause animation when not visible
+  // IntersectionObserver: track visibility so Canvas can pause when off-screen
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -322,24 +377,62 @@ export default function NeuralNetworkBg() {
     return () => observer.disconnect();
   }, []);
 
-  if (!supportsWebGL || prefersReducedMotion) {
-    return <FallbackGradient />;
+  // Listen for WebGL context loss on the actual <canvas> element so we can
+  // fall back to the static gradient instead of showing a blank area.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onContextLost = (e: Event) => {
+      e.preventDefault(); // allow context restore attempt, but we still fall back
+      setWebglFailed(true);
+    };
+    el.addEventListener('webglcontextlost', onContextLost, { once: true });
+    return () => el.removeEventListener('webglcontextlost', onContextLost);
+  }, []);
+
+  // Until the client-side effect has mounted, show static gradient (SSR-safe).
+  if (!mounted) {
+    return <StaticGradient />;
   }
+
+  // If WebGL is not supported or the context was lost, show static gradient.
+  if (!supportsWebGL || webglFailed) {
+    return <StaticGradient />;
+  }
+
+  // prefers-reduced-motion: render Canvas but freeze all animation.
+  // The scene is visible (nodes, edges, particles in resting position)
+  // but nothing moves — satisfying "pause animation, not hide element".
+  const paused = prefersReducedMotion;
 
   return (
     <div ref={containerRef} className="absolute inset-0 z-0">
-      {isVisible && (
+      <CanvasErrorBoundary fallback={<StaticGradient />}>
         <Canvas
           camera={{ position: [0, 1.5, 8], fov: 50 }}
           dpr={[1, 1.5]}
           gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
           style={{ background: 'transparent' }}
+          onCreated={() => {
+            // If the canvas element exists after creation, listen for context loss
+            // as a safety net (the earlier listener on the container may not fire
+            // if the element was swapped by R3F).
+            const canvas = containerRef.current?.querySelector('canvas');
+            canvas?.addEventListener('webglcontextlost', () => setWebglFailed(true), { once: true });
+          }}
         >
-          <Scene scrollProgress={scrollProgress} colors={colors} />
+          <Scene scrollProgress={scrollProgress} colors={colors} paused={paused} />
         </Canvas>
-      )}
-      {!isVisible && <FallbackGradient />}
-      <div className="absolute inset-0 bg-gradient-to-b from-window/30 via-transparent to-window/50 pointer-events-none" />
+      </CanvasErrorBoundary>
+      {/* Soft overlay for text contrast — lighter when animated, heavier when paused/static */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-opacity duration-700"
+        style={{
+          background: paused
+            ? 'linear-gradient(to bottom, rgba(255,255,255,0.06), transparent 40%, rgba(255,255,255,0.08))'
+            : 'linear-gradient(to bottom, rgba(255,255,255,0.03), transparent 40%, rgba(255,255,255,0.05))'
+        }}
+      />
     </div>
   );
 }
